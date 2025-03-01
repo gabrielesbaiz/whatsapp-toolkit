@@ -1,19 +1,12 @@
-# A lightweight heklper package to handle WhatsApp messages using api.whatsapp.com
+# WhatsappToolkit
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/gabrielesbaiz/whatsapp-toolkit.svg?style=flat-square)](https://packagist.org/packages/gabrielesbaiz/whatsapp-toolkit)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/gabrielesbaiz/whatsapp-toolkit/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/gabrielesbaiz/whatsapp-toolkit/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/gabrielesbaiz/whatsapp-toolkit/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/gabrielesbaiz/whatsapp-toolkit/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/gabrielesbaiz/whatsapp-toolkit.svg?style=flat-square)](https://packagist.org/packages/gabrielesbaiz/whatsapp-toolkit)
+A lightweight helper package to handle WhatsApp messages using api.whatsapp.com
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+## Features
 
-## Support us
-
-[<img src="https://github-ads.s3.eu-central-1.amazonaws.com/whatsapp-toolkit.jpg?t=1" width="419px" />](https://spatie.be/github-ad-click/whatsapp-toolkit)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+- ✅ URL generator for api.whatsapp.com
+- ✅ Message formatter from HTML to WhatsApp
+- ✅ PhoneNumber formatter
 
 ## Installation
 
@@ -23,37 +16,39 @@ You can install the package via composer:
 composer require gabrielesbaiz/whatsapp-toolkit
 ```
 
-You can publish and run the migrations with:
+Laravel will automatically register the service provider and facades.
+
+If necessary, you can manually add the service provider in `config/app.php`:
 
 ```bash
-php artisan vendor:publish --tag="whatsapp-toolkit-migrations"
-php artisan migrate
+'providers' => [
+    Gabrielesbaiz\WhatsappToolkit\WhatsappToolkitServiceProvider::class,
+],
 ```
-
-You can publish the config file with:
+And the facades:
 
 ```bash
-php artisan vendor:publish --tag="whatsapp-toolkit-config"
-```
-
-This is the contents of the published config file:
-
-```php
-return [
-];
-```
-
-Optionally, you can publish the views using
-
-```bash
-php artisan vendor:publish --tag="whatsapp-toolkit-views"
+'aliases' => [
+    'WhatsappToolkit' => Gabrielesbaiz\WhatsappToolkit\Facades\WhatsappToolkit::class,
+],
 ```
 
 ## Usage
 
 ```php
 $whatsappToolkit = new Gabrielesbaiz\WhatsappToolkit();
-echo $whatsappToolkit->echoPhrase('Hello, Gabrielesbaiz!');
+
+echo $whatsappToolkit->url('+39 1234567890', '<p>Hallo world!</p>'); // https://api.whatsapp.com/send?phone=%2B39+1234567890&text=Hallo+world%21
+```
+
+Using facade:
+
+```php
+use WhatsappToolkit;
+
+WhatsappToolkit::url('+39 1234567890', '<p>Hallo world!</p>'); // https://api.whatsapp.com/send?phone=%2B39+1234567890&text=Hallo+world%21
+WhatsappToolkit::formatMessage('<p>Hallo world!</p>'); // Hallo+world%21
+WhatsappToolkit::formatPhoneNumber('+39 1234567890'); // %2B39+1234567890
 ```
 
 ## Testing
