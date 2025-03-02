@@ -1,6 +1,7 @@
 # WhatsappToolkit
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/gabrielesbaiz/whatsapp-toolkit.svg?style=flat-square)](https://packagist.org/packages/gabrielesbaiz/whatsapp-toolkit)
+[![Total Downloads](https://img.shields.io/packagist/dt/gabrielesbaiz/whatsapp-toolkit.svg?style=flat-square)](https://packagist.org/packages/gabrielesbaiz/whatsapp-toolkit)
 
 A lightweight helper package to handle WhatsApp messages using api.whatsapp.com
 
