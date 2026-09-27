@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WhatsappToolkit Docs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Click-to-chat links, WhatsApp formatting, QR codes and Cloud API sending for Laravel.">
+<meta property="og:title" content="WhatsappToolkit">
+<meta property="og:description" content="Click-to-chat links, WhatsApp formatting, QR codes and Cloud API sending for Laravel.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://gabrielesbaiz.github.io/whatsapp-toolkit/">
+<meta property="og:image" content="https://gabrielesbaiz.github.io/whatsapp-toolkit/art/whatsapp-toolkit-logo.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💬</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Instrument+Sans:wght@400;500;600;700&family=Special+Elite&display=swap">
+
+<style>
+/* ───────────────────────────────────────────────────────────────
+   Telegram office, in the chat palette. Special Elite carries the
+   headings, Courier Prime the labels and code, Instrument Sans the
+   running text — Special Elite cannot hold a paragraph.
+   ─────────────────────────────────────────────────────────────── */
+:root{
+  --paper:#f6f7f5; --ink:#0f1b17; --sub:#47534d; --muted:#657570;
+  --rule:#dfe5e1; --wash:#eaefeb;
+  --accent:#0d9c4c; --accent-text:#0b6b3a; --accent-ink:#04140b;
+  --display:'Special Elite',ui-monospace,monospace;
+  --body:'Instrument Sans',system-ui,sans-serif;
+  --mono:'Courier Prime',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0b141a; --ink:#e9edef; --sub:#aebac1; --muted:#8696a0;
+    --rule:#1f2c33; --wash:#131f26;
+    --accent:#25d366; --accent-text:#53e08a; --accent-ink:#04140b;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0b141a; --ink:#e9edef; --sub:#aebac1; --muted:#8696a0;
+  --rule:#1f2c33; --wash:#131f26;
+  --accent:#25d366; --accent-text:#53e08a; --accent-ink:#04140b;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  -webkit-font-smoothing:antialiased;padding-top:3.6rem}
+:focus-visible{outline:2px solid var(--accent-text);outline-offset:3px}
+img,svg{max-width:100%}
+a{color:var(--accent-text)}
+
+.mx{max-width:88rem;margin:0 auto;padding-inline:clamp(1.1rem,3.4vw,3rem)}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent-text);margin:0}
+.num{font-variant-numeric:tabular-nums}
+.hidden{display:none!important}
+.sr{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.reveal{opacity:0;transform:translateY(12px);transition:opacity .55s ease,transform .55s cubic-bezier(.2,.8,.2,1)}
+.reveal.seen{opacity:1;transform:none}
+
+h1,h2,h3,.disp{font-family:var(--display);font-weight:400;text-transform:uppercase;
+  letter-spacing:.01em;text-wrap:balance}
+h1{font-size:clamp(1.7rem,3.4vw,2.35rem);line-height:1.18;margin:0}
+h2{font-size:clamp(1.25rem,2.6vw,1.7rem);line-height:1.22;margin:.4rem 0 0;scroll-margin-top:5.4rem}
+h3{font-size:1rem;line-height:1.4;margin:0 0 .45rem}
+p{font-size:.98rem;line-height:1.72;color:var(--sub);max-width:42rem}
+ul.plain{margin:1rem 0 0;padding-left:1.1rem;color:var(--sub);font-size:.96rem;line-height:1.75;max-width:40rem}
+ul.plain li{margin-bottom:.4rem}
+strong{color:var(--ink)}
+code:not(.code){font-family:var(--mono);font-size:.86em;background:var(--wash);
+  border:1px solid var(--rule);padding:.05em .3em}
+
+.btn{display:inline-flex;align-items:center;gap:.5rem;text-decoration:none;font-weight:700;
+  font-size:.9rem;padding:.75rem 1.2rem;background:var(--ink);color:var(--paper);
+  border:1px solid var(--ink);transition:background .18s,color .18s,border-color .18s}
+.btn:hover{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--ink)}
+.btn.ghost:hover{background:var(--wash);border-color:var(--accent-text);color:var(--accent-text)}
+
+/* masthead ───────────────────────────────────────────────────── */
+.top{position:fixed;inset:0 0 auto 0;z-index:60;
+  background:color-mix(in srgb,var(--paper) 90%,transparent);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--rule)}
+.top .in{display:flex;align-items:center;gap:.9rem;height:3.5rem}
+.top .brand{display:inline-flex;align-items:baseline;gap:.5rem;font-family:var(--display);
+  font-size:1rem;text-decoration:none;white-space:nowrap;color:var(--accent-text);text-transform:uppercase}
+.top .brand i{font-style:normal;color:var(--ink)}
+.top .ver{font-family:var(--mono);font-size:.68rem;color:var(--accent-text);
+  background:color-mix(in srgb,var(--accent) 14%,transparent);
+  border:1px solid color-mix(in srgb,var(--accent-text) 38%,transparent);padding:.06rem .42rem}
+.top nav{display:none;align-items:center;gap:.1rem;margin-left:auto;font-size:.84rem}
+@media(min-width:1080px){.top nav{display:flex}}
+.top nav a{text-decoration:none;color:var(--sub);padding:.34rem .66rem;border:1px solid transparent}
+.top nav a:hover{color:var(--ink)}
+.top nav a[aria-current="true"]{color:var(--accent-text);
+  border-color:color-mix(in srgb,var(--accent-text) 50%,transparent);
+  background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.top nav a.sponsor{color:var(--accent-text);font-weight:700}
+.top .tools{display:flex;align-items:center;gap:.45rem;margin-left:auto}
+@media(min-width:1080px){.top .tools{margin-left:.6rem}}
+.top .menu{display:inline-flex;font:inherit;font-size:.76rem;cursor:pointer;background:var(--wash);
+  color:var(--sub);border:1px solid var(--rule);padding:.34rem .7rem}
+@media(min-width:1000px){.top .menu{display:none}}
+.top .search{display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;font:inherit;
+  font-size:.78rem;color:var(--muted);background:var(--wash);border:1px solid var(--rule);
+  padding:.3rem .55rem .3rem .7rem}
+.top .search svg{width:.8rem;height:.8rem;fill:none;stroke:currentColor;stroke-width:1.8}
+.top .search kbd{font-family:var(--mono);font-size:.64rem;border:1px solid var(--rule);padding:.04rem .3rem}
+@media(max-width:700px){.top .search span,.top .search kbd{display:none}}
+.top .mode{font:inherit;font-size:.76rem;font-weight:700;cursor:pointer;background:var(--ink);
+  color:var(--paper);border:1px solid var(--ink);padding:.34rem .8rem}
+.top .mode:hover{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.progress{position:absolute;inset:auto auto -1px 0;height:2px;width:0;background:var(--accent-text)}
+
+/* command palette ────────────────────────────────────────────── */
+.pal[hidden]{display:none}
+.pal{position:fixed;inset:0;z-index:90;display:grid;place-items:start center;
+  padding-top:clamp(3rem,12vh,8rem);background:color-mix(in srgb,var(--ink) 42%,transparent);
+  backdrop-filter:blur(3px)}
+.pal .box{width:min(36rem,92vw);background:var(--paper);border:2px solid var(--ink);
+  box-shadow:0 30px 70px -30px rgba(0,0,0,.5)}
+.pal input{width:100%;border:0;border-bottom:1px solid var(--rule);background:transparent;
+  color:var(--ink);font:inherit;font-size:1rem;padding:1rem 1.1rem;outline:none}
+.pal ul{list-style:none;margin:0;padding:.4rem;max-height:52vh;overflow-y:auto}
+.pal li{display:flex;align-items:baseline;gap:.7rem;padding:.55rem .7rem;cursor:pointer;
+  font-size:.9rem;color:var(--sub)}
+.pal li b{font-weight:600;color:var(--ink)}
+.pal li em{font-style:normal;margin-left:auto;font-family:var(--mono);font-size:.64rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.pal li[aria-selected="true"]{background:var(--wash)}
+.pal li[aria-selected="true"] b{color:var(--accent-text)}
+
+/* code ───────────────────────────────────────────────────────── */
+.code{font-family:var(--mono);font-size:.82rem;line-height:1.75;background:var(--wash);
+  border:1px solid var(--rule);padding:.95rem 1.1rem 1.05rem;color:var(--ink);
+  margin:1.1rem 0 0;tab-size:4;max-width:100%;
+  /* Wrapped, never scrolled: the end of a line is usually the part being
+     explained, and a horizontal scrollbar is where it goes to hide. The
+     hanging indent marks a continuation as a continuation. */
+  white-space:pre-wrap;overflow-wrap:anywhere;word-break:normal;
+  padding-left:calc(1.1rem + 2.4ch);text-indent:-2.4ch}
+.code .k{color:var(--accent-text)}
+.code .c{color:var(--muted)}
+.code .s{color:var(--sub)}
+.out{font-family:var(--mono);font-size:.8rem;line-height:1.7;border:1px solid var(--rule);
+  border-left:3px solid var(--accent-text);padding:.8rem 1rem;color:var(--sub);
+  white-space:pre-wrap;overflow-wrap:anywhere;margin-top:.8rem}
+.out b{color:var(--ink);font-weight:700}
+.cap{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);margin:1.2rem 0 -.4rem}
+.pair{display:grid;gap:.9rem;margin-top:1.1rem}
+@media(min-width:900px){.pair.two{grid-template-columns:1fr 1fr;align-items:start}}
+.pair.two .code{margin-top:0}
+
+.scroller{overflow-x:auto;margin-top:1.3rem}
+table{width:100%;border-collapse:collapse;font-size:.86rem;min-width:30rem}
+th{text-align:left;font-family:var(--mono);font-size:.64rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);font-weight:400;padding:.5rem .7rem;
+  border-bottom:1px solid var(--rule);white-space:nowrap}
+td{padding:.55rem .7rem;border-bottom:1px solid var(--rule);color:var(--sub);vertical-align:top}
+td.mono,th.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+td b{color:var(--ink)}
+.note{margin-top:1.3rem;border-left:3px solid var(--accent-text);background:var(--wash);
+  padding:.95rem 1.15rem;font-size:.92rem;line-height:1.7;color:var(--sub);max-width:42rem}
+.note b{color:var(--ink)}
+
+/* docs layout ────────────────────────────────────────────────── */
+.docs{display:grid;gap:clamp(1.6rem,3.2vw,2.8rem);grid-template-columns:1fr;
+  padding-block:clamp(1.8rem,3.4vw,2.8rem)}
+@media(min-width:1000px){.docs{grid-template-columns:15rem minmax(0,1fr)}}
+@media(min-width:1280px){.docs{grid-template-columns:15rem minmax(0,1fr) 14rem}}
+.sidenav,.onthispage{display:none}
+@media(min-width:1000px){
+  .sidenav{display:block;position:sticky;top:4.8rem;align-self:start;
+    max-height:calc(100vh - 6.4rem);overflow-y:auto}
+}
+@media(min-width:1280px){
+  .onthispage{display:block;position:sticky;top:4.8rem;align-self:start;
+    max-height:calc(100vh - 6.4rem);overflow-y:auto}
+}
+.sidenav.open{display:block;position:static;max-height:none;margin-bottom:1rem}
+.sidenav h4,.onthispage h4{font-family:var(--mono);font-size:.66rem;font-weight:400;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin:0 0 .7rem}
+.sidenav .group+.group{margin-top:1.5rem}
+.sidenav ul{list-style:none;margin:0;padding:0;display:grid;gap:.1rem}
+.sidenav a{display:block;text-decoration:none;color:var(--sub);font-size:.88rem;
+  padding:.3rem .6rem;border-left:2px solid var(--rule)}
+.sidenav a:hover{color:var(--ink)}
+.sidenav a[aria-current="page"]{color:var(--accent-text);border-left-color:var(--accent-text);
+  font-weight:600;background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.onthispage ol{list-style:none;margin:0;padding:0;display:grid;gap:.1rem;counter-reset:toc}
+.onthispage a{display:flex;gap:.6rem;text-decoration:none;color:var(--sub);font-size:.84rem;
+  padding:.28rem .5rem;border-left:2px solid var(--rule)}
+.onthispage a::before{counter-increment:toc;content:counter(toc,decimal-leading-zero);
+  font-family:var(--mono);font-size:.66rem;color:var(--muted)}
+.onthispage a:hover{color:var(--ink)}
+.onthispage a[aria-current="true"]{color:var(--accent-text);border-left-color:var(--accent-text);font-weight:600}
+.onthispage a[aria-current="true"]::before{color:var(--accent-text)}
+
+.body{min-width:0}
+.body .page>.lede{margin-top:.7rem;color:var(--sub);font-size:1.02rem;max-width:42rem}
+.body .sec{padding-block:clamp(1.6rem,3vw,2.3rem);border-top:1px solid var(--rule)}
+.body .sec:first-of-type{border-top:0;padding-top:1.2rem}
+.pager{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  border-top:1px solid var(--rule);margin-top:2.2rem;padding-top:1.3rem}
+.pager a{text-decoration:none;font-size:.82rem;color:var(--muted);font-family:var(--mono);
+  letter-spacing:.14em;text-transform:uppercase}
+.pager a b{display:block;font-family:var(--display);font-size:1.02rem;font-weight:400;
+  color:var(--ink);margin-top:.25rem;letter-spacing:.01em}
+.pager a:hover b{color:var(--accent-text)}
+.pager .next{text-align:right;margin-left:auto}
+
+/* landing ────────────────────────────────────────────────────── */
+.hero{padding-block:clamp(2.4rem,5vw,4rem)}
+.hero .mark{display:block;width:min(30rem,78vw);height:auto;margin:0 0 1.6rem}
+.hero .kicker{display:flex;align-items:center;gap:.7rem}
+.hero .kicker::before{content:"";width:1.6rem;height:1px;background:var(--accent-text)}
+.hero h1{font-size:clamp(2rem,4.6vw,3.2rem);line-height:1.16;margin-top:1rem}
+.hero .sell{margin-top:1.1rem;font-size:1.06rem;line-height:1.68;max-width:38rem}
+.hero .cta{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1.7rem}
+.hero .facts{display:flex;flex-wrap:wrap;gap:1.3rem;margin-top:2rem;font-family:var(--mono);
+  font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hero .facts b{color:var(--ink);font-weight:700}
+.form{position:relative;border:2px solid var(--ink);background:var(--wash);
+  padding:1.3rem 1.4rem 2.6rem;max-width:36rem;margin-top:2.2rem}
+.form .rulehead{display:flex;justify-content:space-between;gap:1rem;
+  border-bottom:1px solid var(--ink);padding-bottom:.5rem;font-family:var(--mono);
+  font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--sub)}
+.form .msg{font-family:var(--display);font-size:1rem;line-height:2.14;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--ink);margin-top:1rem;
+  background-image:repeating-linear-gradient(transparent 0 calc(2.14em - 1px),
+    var(--rule) calc(2.14em - 1px) 2.14em)}
+.stamp{position:absolute;right:.7rem;bottom:.7rem;border:3px solid var(--accent-text);
+  color:var(--accent-text);font-family:var(--mono);font-weight:700;font-size:.78rem;
+  letter-spacing:.16em;text-transform:uppercase;padding:.4rem .7rem;
+  transform:rotate(-14deg) scale(2.6);opacity:0;
+  transition:transform .42s cubic-bezier(.2,1.4,.4,1),opacity .28s ease}
+.stamp.on{transform:rotate(-14deg) scale(1);opacity:.92}
+.stamp small{display:block;font-size:.58rem;letter-spacing:.2em;opacity:.8}
+
+.band{border-top:1px solid var(--rule);padding-block:clamp(2.6rem,5.4vw,4rem)}
+.grid3{display:grid;gap:1.2rem;margin-top:1.9rem}
+@media(min-width:860px){.grid3{grid-template-columns:repeat(3,1fr)}}
+.card{border:1px solid var(--rule);padding:1.1rem 1.15rem;background:var(--wash)}
+.card p{font-size:.9rem;margin:0}
+.vs{display:grid;gap:1rem;margin-top:1.6rem}
+@media(min-width:960px){.vs{grid-template-columns:1fr 1fr}}
+.vs .col{border:1px solid var(--rule);padding:1rem 1.1rem;background:var(--wash)}
+.vs .col.good{border-color:color-mix(in srgb,var(--accent-text) 50%,transparent)}
+.vs h4{font-family:var(--mono);font-size:.64rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 .2rem;font-weight:400}
+.vs .col.good h4{color:var(--accent-text)}
+.vs .code{background:transparent;border:0;padding:0 0 0 2.4ch}
+.perf{margin-top:1.7rem;border:1px solid var(--rule)}
+.perf .r{display:grid;grid-template-columns:1.4fr .8fr .8fr .7fr;gap:.6rem;padding:.65rem 1rem;
+  border-bottom:1px solid var(--rule);font-size:.86rem;align-items:center;background:var(--wash)}
+.perf .r:last-child{border-bottom:0}
+.perf .r.hd{background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:.62rem;
+  letter-spacing:.18em;text-transform:uppercase}
+.perf .n{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--sub);text-align:right}
+.perf .x{font-family:var(--mono);font-weight:700;color:var(--accent-text);text-align:right}
+
+/* sponsor band ───────────────────────────────────────────────── */
+.support{border-top:1px solid var(--rule);padding-block:clamp(3rem,6.4vw,4.8rem)}
+.support .eyebrow{display:flex;align-items:center;gap:.7rem}
+.support .eyebrow::before{content:"";width:1.6rem;height:1px;background:var(--accent-text)}
+.support h2{font-size:clamp(1.7rem,4.4vw,2.8rem);line-height:1.1;margin:.9rem 0 0;max-width:18ch}
+.support h2 em{font-style:normal;color:var(--accent-ink);background:var(--accent);padding:0 .1em;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.support .top-grid{display:grid;gap:clamp(1.8rem,4.4vw,3.2rem);grid-template-columns:1fr;margin-top:1.4rem}
+@media(min-width:940px){.support .top-grid{grid-template-columns:1.15fr .85fr;align-items:start}}
+.support p.body{font-size:1rem;line-height:1.72;color:var(--sub);max-width:34rem;margin:1.1rem 0 0}
+.sponsor-card{border:2px solid var(--ink);background:var(--wash);padding:1.5rem}
+.sponsor-card .price{font-family:var(--display);font-size:clamp(2.4rem,5.4vw,3.3rem);
+  color:var(--accent-text);line-height:1}
+.sponsor-card .terms{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--muted);margin:.7rem 0 1.2rem}
+.sponsor-card .btn{width:100%;justify-content:center}
+.sponsor-card .fine{font-size:.78rem;color:var(--muted);margin:.9rem 0 0;text-align:center}
+.ways{display:grid;grid-template-columns:1fr;margin-top:2.4rem;border-top:1px solid var(--rule)}
+@media(min-width:720px){.ways{grid-template-columns:1fr 1fr}}
+@media(min-width:1040px){.ways{grid-template-columns:repeat(4,1fr)}}
+.ways .w{padding:1.3rem 1.2rem 1.5rem;border-bottom:1px solid var(--rule);position:relative}
+@media(min-width:1040px){.ways .w{border-right:1px solid var(--rule)}.ways .w:last-child{border-right:0}}
+.ways .tag{position:absolute;top:1.3rem;right:1.2rem;font-family:var(--mono);font-size:.58rem;
+  letter-spacing:.16em;color:var(--accent-text);
+  border:1px solid color-mix(in srgb,var(--accent-text) 40%,transparent);padding:.06rem .4rem}
+.ways .ic{font-size:1.05rem}
+.ways h3{margin:.65rem 0 .4rem}
+.ways p{margin:0;font-size:.88rem;line-height:1.62}
+.why{margin-top:2.1rem;border-left:3px solid var(--accent-text);background:var(--wash);
+  padding:1.05rem 1.25rem;font-size:.92rem;line-height:1.7;color:var(--sub);max-width:52rem}
+.why b{color:var(--ink)}
+
+/* footer ─────────────────────────────────────────────────────── */
+.sitefoot{border-top:1px solid var(--rule);background:var(--wash);padding-block:clamp(2.4rem,4.6vw,3.4rem)}
+.sitefoot .cols{display:grid;gap:2rem;grid-template-columns:repeat(2,1fr)}
+@media(min-width:880px){.sitefoot .cols{grid-template-columns:repeat(4,1fr)}}
+.sitefoot h4{font-family:var(--mono);font-size:.64rem;font-weight:400;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 1rem}
+.sitefoot ul{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
+.sitefoot a{text-decoration:none;color:var(--sub);font-size:.9rem}
+.sitefoot a:hover{color:var(--accent-text)}
+.sitefoot .base{display:flex;justify-content:space-between;gap:1.2rem;flex-wrap:wrap;
+  border-top:1px solid var(--rule);margin-top:2.2rem;padding-top:1.3rem;font-size:.8rem;color:var(--muted)}
+
+.licence{font-family:var(--mono);font-size:.82rem;line-height:1.8;white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  border:1px solid var(--rule);background:var(--wash);padding:1.1rem 1.2rem;color:var(--sub);
+  margin-top:1.2rem;max-width:46rem}
+
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important}
+  .reveal{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="mx in">
+    <a class="brand" href="#/home">WhatsappToolkit<i>.</i> <span class="ver">2.0.0</span></a>
+    <nav id="nav">
+      <a href="#/install">Install</a>
+      <a href="#/guide">Guide</a>
+      <a href="#/configuration">Config</a>
+      <a href="#/api">API</a>
+      <a href="#/recipes">Recipes</a>
+      <a href="#/changelog">Changelog</a>
+      <a class="sponsor" href="#/sponsor">&#9829; Sponsor</a>
+    </nav>
+    <div class="tools">
+      <button class="menu" id="menuBtn" aria-expanded="false">Pages</button>
+      <button class="search" id="openPal" aria-label="Search the documentation" aria-keyshortcuts="Meta+K">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.4 10.4 14 14"/></svg>
+        <span>Search</span><kbd id="kbd">&#8984;K</kbd>
+      </button>
+      <button class="mode" id="mode">Dark</button>
+    </div>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+
+<div class="pal" id="pal" hidden>
+  <div class="box" role="dialog" aria-modal="true" aria-label="Search the documentation">
+    <input id="palInput" type="text" placeholder="Jump to&hellip;" autocomplete="off" spellcheck="false">
+    <ul id="palList" role="listbox"></ul>
+  </div>
+</div>
+
+<main>
+
+<!-- ══════════════════════════ HOME ══════════════════════════ -->
+<section class="page" id="home">
+  <div class="mx hero">
+    <img class="mark" src="art/whatsapp-toolkit-logo.png"
+         alt="WhatsappToolkit" width="1600" height="533">
+    <p class="eyebrow kicker">Laravel 11 · 12 · 13 &nbsp;·&nbsp; PHP 8.3+</p>
+    <h1>Message received, message delivered</h1>
+    <p class="sell">HTML in, WhatsApp markup out — entities decoded, lists renumbered,
+      link destinations kept. Then a URL that opens the right conversation.</p>
+    <div class="form">
+      <div class="rulehead"><span>Gabrielesbaiz &middot; WhatsappToolkit</span><span>No. 2.0.0</span></div>
+      <div class="msg">Hi *Sarah* stop<br>quote Q-7 is ready stop<br>Café &amp; croissant stop</div>
+      <div class="stamp" id="stamp">Delivered<small>183 tests · 264 assertions</small></div>
+    </div>
+    <div class="cta">
+      <a class="btn" href="#/install">Install it</a>
+      <a class="btn ghost" href="https://github.com/gabrielesbaiz/whatsapp-toolkit">GitHub</a>
+    </div>
+    <div class="facts">
+      <span><b class="num">183</b> tests</span>
+      <span><b class="num">264</b> assertions</span>
+      <span>PHPStan level <b class="num">6</b></span>
+      <span><b>MIT</b></span>
+      <span>no required deps beyond Laravel</span>
+    </div>
+  </div>
+
+  <div class="band"><div class="mx">
+    <p class="eyebrow">00 — The smallest real thing</p>
+    <h2>Three lines, and the link opens the right chat</h2>
+    <p style="margin-top:1rem">The number is normalised, the body is percent-encoded exactly
+      once, and the result is the short form WhatsApp publishes.</p>
+    <div class="pair two">
+      <div>
+        <p class="cap">Input</p>
+        <pre class="code"><span class="k">use</span> Gabrielesbaiz\WhatsappToolkit\Facades\WhatsappToolkit;
+
+WhatsappToolkit::<span class="k">to</span>(<span class="s">'+39 333 123 4567'</span>)
+    -&gt;<span class="k">text</span>(<span class="s">'Hello'</span>)
+    -&gt;<span class="k">url</span>();</pre>
+      </div>
+      <div>
+        <p class="cap">Output</p>
+        <div class="out">https://wa.me/<b>393331234567</b>?text=Hello</div>
+        <p style="font-size:.9rem;margin-top:.9rem">In 1.x the same call produced
+          <code>phone=%2B39+333+123+4567</code> — a link that opened WhatsApp and no conversation.</p>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="band"><div class="mx">
+    <p class="eyebrow">01 — Numbers</p>
+    <h2>One column, six formats, one wa_id</h2>
+    <p style="margin-top:1rem">Everything that is not a digit goes. The <code>00</code> access
+      prefix goes. A national trunk zero goes. The configured country code is applied to bare
+      local numbers, and the result has to be 7–15 digits.</p>
+    <div class="scroller"><table>
+      <thead><tr><th class="mono">Input</th><th class="mono">waId()</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">+39 333 123 4567</td><td class="mono"><b>393331234567</b></td><td>Punctuation stripped</td></tr>
+        <tr><td class="mono">(+39) 333/123-4567</td><td class="mono"><b>393331234567</b></td><td>Same</td></tr>
+        <tr><td class="mono">0039 333 1234567</td><td class="mono"><b>393331234567</b></td><td>00 is an access prefix</td></tr>
+        <tr><td class="mono">333 123 4567</td><td class="mono"><b>393331234567</b></td><td>Country code applied</td></tr>
+        <tr><td class="mono">039 2345678</td><td class="mono"><b>39392345678</b></td><td>Monza landline: 0 is a trunk prefix</td></tr>
+        <tr><td class="mono">+1 (202) 555-0147</td><td class="mono"><b>12025550147</b></td><td>Carries its own country code</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note">The last two rows are the interesting pair: both open with the digits of the
+      Italian country code, and only one of them is one. Length settles it — a national number
+      that long does not exist.</div>
+  </div></div>
+
+  <div class="band"><div class="mx">
+    <p class="eyebrow">02 — Formatting</p>
+    <h2>Rich text in, WhatsApp markup out</h2>
+    <p style="margin-top:1rem">Formatting returns <strong>plain text</strong>, never URL-encoded.
+      That separation is what lets the same body go into a link, a Cloud API request and a log line.</p>
+    <div class="pair two">
+      <div>
+        <p class="cap">Input</p>
+        <pre class="code">WhatsappToolkit::<span class="k">format</span>(<span class="s">'&lt;p&gt;Hi &lt;b&gt;Sarah&lt;/b&gt; &amp;amp; co.&lt;/p&gt;'</span>);
+WhatsappToolkit::<span class="k">formatMarkdown</span>(<span class="s">'**Hi** *Sarah*'</span>);
+WhatsappToolkit::<span class="k">toHtml</span>(<span class="s">'*Hi* _Sarah_'</span>);</pre>
+      </div>
+      <div>
+        <p class="cap">Output</p>
+        <div class="out">Hi <b>*Sarah*</b> &amp; co.
+<b>*Hi*</b> _Sarah_
+&lt;strong&gt;Hi&lt;/strong&gt; &lt;em&gt;Sarah&lt;/em&gt;</div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="band"><div class="mx">
+    <p class="eyebrow">03 — Links</p>
+    <h2>Stop writing the anchor by hand</h2>
+    <p style="margin-top:1rem">Hand-written click-to-chat anchors go wrong the same two ways every
+      time: the number loses its country code, and the <code>&amp;</code> between query parameters
+      is emitted raw into the markup.</p>
+    <div class="vs">
+      <div class="col">
+        <h4>Before — the usual Blade</h4>
+        <pre class="code">&lt;a href="https://api.whatsapp.com/send
+   ?phone=<span class="s">{{ $phone }}</span>&amp;text=<span class="s">{{ urlencode($subject) }}</span>"
+   target="_blank"&gt;Chat on WhatsApp&lt;/a&gt;</pre>
+        <div class="out">Raw <b>&amp;</b> · no country code · spaces as <b>+</b> · dead link when empty</div>
+      </div>
+      <div class="col good">
+        <h4>After — the component</h4>
+        <pre class="code">&lt;<span class="k">x-whatsapp-link</span> :to="<span class="s">$dealer-&gt;mobile_phone</span>"
+                 :message="<span class="s">$body</span>"
+                 class="btn"&gt;
+    Chat on WhatsApp
+&lt;/<span class="k">x-whatsapp-link</span>&gt;</pre>
+        <div class="out">Escaped <b>&amp;amp;</b> · country code applied · <b>%20</b> for spaces ·
+renders <b>nothing</b> when unusable</div>
+      </div>
+    </div>
+  </div></div>
+
+  <div class="band"><div class="mx">
+    <p class="eyebrow">04 — Sending</p>
+    <h2>Dormant until you configure it</h2>
+    <p style="margin-top:1rem">With the Cloud API off, no routes are registered, no credentials are
+      read, and the notification channel returns without sending. Turn it on and the same builder sends.</p>
+    <div class="pair two">
+      <div>
+        <p class="cap">Sending</p>
+        <pre class="code">WhatsappToolkit::<span class="k">to</span>($dealer-&gt;mobile_phone)
+    -&gt;<span class="k">html</span>($body)
+    -&gt;<span class="k">send</span>();</pre>
+      </div>
+      <div>
+        <p class="cap">Testing it</p>
+        <pre class="code">$whatsapp = WhatsappToolkit::<span class="k">fake</span>();
+
+$dealer-&gt;<span class="k">notify</span>(<span class="k">new</span> QuotationReady($q));
+
+$whatsapp-&gt;<span class="k">assertSentTo</span>(<span class="s">'+39 333 123 4567'</span>);</pre>
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="card"><h3>The 24-hour window</h3><p>Free-form messages only reach someone who
+        wrote to you in the last 24 hours. Outside it, approved templates only — and
+        <code>ReEngagementRequiredException</code> says so.</p></div>
+      <div class="card"><h3>Errors that name the fix</h3><p>Meta's codes map to typed exceptions
+        carrying the <code>fbtrace_id</code> support asks for. Only transient failures are retried.</p></div>
+      <div class="card"><h3>A verified webhook</h3><p>Opt-in route, HMAC over the raw body,
+        repeat deliveries dropped. It dispatches events and stops.</p></div>
+    </div>
+  </div></div>
+
+  <div class="band"><div class="mx">
+    <p class="eyebrow">Measured, not asserted</p>
+    <h2>Formatting is on the hot path</h2>
+    <p style="margin-top:1rem"><code>composer bench</code> runs the 2.0 formatter against a verbatim
+      copy of the 1.x implementation. 2000 iterations, PHP 8.4.</p>
+    <div class="perf">
+      <div class="r hd"><span>Body</span><span class="n">1.x</span><span class="n">2.0</span><span class="x">&nbsp;</span></div>
+      <div class="r"><span>Plain text</span><span class="n">6.14 ms</span><span class="n">0.20 ms</span><span class="x">31×</span></div>
+      <div class="r"><span>Small HTML</span><span class="n">16.33 ms</span><span class="n">8.61 ms</span><span class="x">1.9×</span></div>
+      <div class="r"><span>Rich editor output</span><span class="n">248.85 ms</span><span class="n">175.54 ms</span><span class="x">1.4×</span></div>
+      <div class="r"><span>Same body, memoised</span><span class="n">—</span><span class="n">1.07 ms</span><span class="x">~230×</span></div>
+    </div>
+  </div></div>
+
+  <div class="band"><div class="mx">
+    <p class="eyebrow">Honestly</p>
+    <h2>When not to use this</h2>
+    <p style="margin-top:1rem">If all you want is a link to a chat, you do not need a package.
+      WhatsApp publishes the URL format and it is two lines:</p>
+    <pre class="code" style="max-width:46rem">$url = <span class="s">'https://wa.me/'</span> . $phone . <span class="s">'?text='</span> . <span class="k">rawurlencode</span>($message);</pre>
+    <p style="margin-top:1.2rem">Write that and move on — if <code>$phone</code> is already digits,
+      if <code>$message</code> is already plain text, and if nobody will ever paste rich text into
+      it. Those three conditions are what fail in practice.</p>
+    <div class="why"><b>The trade.</b> The link half has no dependencies beyond Laravel and works the
+      moment you install it. The sending half needs a Meta Business account, an approved template
+      for anything outside a 24-hour window, and a System User token — none of which this package
+      can give you. It stays dormant until you configure it, and most applications never will.</div>
+  </div></div>
+
+  <div class="support" id="sponsorband"><div class="mx">
+    <p class="eyebrow">Support this package</p>
+    <h2>Free forever. Not free to <em>maintain</em>.</h2>
+    <div class="top-grid">
+      <div>
+        <p class="body">Nobody notices a phone number that was normalised correctly. The link opens
+          the right conversation, the accented characters arrive as accented characters, and the
+          work that produced that is invisible by design. What is not invisible is the maintenance
+          behind it: Meta ships a new Graph API version, deprecates an error code, changes what a
+          template rejects — and a package that quietly kept working has to be made to keep working.
+          It stays MIT either way.</p>
+        <p class="body">Sponsoring buys the unglamorous half: testing against each new Laravel major,
+          keeping the Cloud API mapping current with Meta's codes, answering issues from people whose
+          numbers arrive in a format nobody anticipated, and holding the suite at 183 passing tests
+          while all of that moves. It stays MIT either way.</p>
+      </div>
+      <div class="sponsor-card">
+        <div class="price">$5</div>
+        <p class="terms">per month · cancel anytime</p>
+        <a class="btn" href="https://github.com/sponsors/gabrielesbaiz">&#9829; Become a sponsor</a>
+        <p class="fine">Company tiers get a logo in the README and on this page.</p>
+      </div>
+    </div>
+    <div class="ways">
+      <div class="w"><span class="tag">Free</span><div class="ic">⭐</div><h3>Star the repo</h3>
+        <p>Thirty seconds, and it is the first signal other developers look at.</p></div>
+      <div class="w"><span class="tag">Free</span><div class="ic">🐛</div><h3>Open a good issue</h3>
+        <p>A phone format that normalises wrong, with the input, is worth more than you think.</p></div>
+      <div class="w"><div class="ic">❤️</div><h3>Sponsor from $5</h3>
+        <p>Monthly, cancellable, and it pays for the compatibility work nobody sees.</p></div>
+      <div class="w"><div class="ic">🏢</div><h3>Company tier</h3>
+        <p>Your logo in the README and here, and a direct line for upgrade questions.</p></div>
+    </div>
+    <div class="why"><b>Why ask at all?</b> This package is MIT and always will be. Nothing is
+      paywalled, nothing phones home, and no formatter, link flavour or Cloud API feature is held
+      back for sponsors. Sponsorship buys maintenance time, not features — and if you cannot sponsor,
+      the star and the bug report genuinely help.</div>
+  </div></div>
+</section>
+
+<!-- ══════════════════════ DOCS SHELL ══════════════════════ -->
+<div class="mx docs" id="docshell">
+  <aside class="sidenav" id="sidenav" aria-label="Documentation">
+    <div class="group">
+      <h4>Getting started</h4>
+      <ul>
+        <li><a href="#/home">Introduction</a></li>
+        <li><a href="#/install">Installation</a></li>
+        <li><a href="#/configuration">Configuration</a></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h4>Usage</h4>
+      <ul>
+        <li><a href="#/guide">Guide</a></li>
+        <li><a href="#/recipes">Recipes</a></li>
+        <li><a href="#/commands">Commands</a></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h4>Reference</h4>
+      <ul>
+        <li><a href="#/api">API reference</a></li>
+        <li><a href="#/troubleshooting">Troubleshooting</a></li>
+      </ul>
+    </div>
+    <div class="group">
+      <h4>Project</h4>
+      <ul>
+        <li><a href="#/security">Security</a></li>
+        <li><a href="#/upgrade">Upgrading</a></li>
+        <li><a href="#/changelog">Changelog</a></li>
+        <li><a href="#/project">Project &amp; licence</a></li>
+        <li><a href="#/sponsor">Sponsor</a></li>
+      </ul>
+    </div>
+  </aside>
+
+  <div class="body" id="docsbody">
+
+    <!-- ─────────── INSTALL ─────────── -->
+    <section class="page" id="install">
+      <h1>Installation</h1>
+      <p class="lede">One composer line, one env value, and links work. Everything else is optional.</p>
+
+      <div class="sec" id="i-req">
+        <h2>Requirements</h2>
+        <div class="scroller"><table>
+          <tbody>
+            <tr><td><b>PHP</b></td><td class="mono">8.3 or newer</td></tr>
+            <tr><td><b>Laravel</b></td><td class="mono">11, 12 or 13</td></tr>
+            <tr><td><b>bacon/bacon-qr-code</b></td><td>Suggested — only for QR codes</td></tr>
+            <tr><td><b>laravel/nova</b></td><td>Suggested — only for the bundled action</td></tr>
+            <tr><td><b>Meta WhatsApp Business account</b></td><td>Only for sending</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:1.1rem">Nothing beyond <code>illuminate/contracts</code>,
+          <code>illuminate/support</code>, <code>spatie/laravel-package-tools</code> and
+          <code>ext-json</code> is required. Building a link never needs an HTTP client,
+          a credential or a network — an architecture test enforces that.</p>
+      </div>
+
+      <div class="sec" id="i-install">
+        <h2>Install</h2>
+        <pre class="code">composer require gabrielesbaiz/whatsapp-toolkit</pre>
+        <p style="margin-top:1.1rem">The service provider and the <code>WhatsappToolkit</code> facade
+          register themselves through package discovery.</p>
+      </div>
+
+      <div class="sec" id="i-config">
+        <h2>Configure</h2>
+        <pre class="code">php artisan vendor:publish --tag="whatsapp-toolkit-config"</pre>
+        <p style="margin-top:1.1rem">The one setting worth putting in <code>.env</code> straight away
+          is the country code your local numbers belong to:</p>
+        <pre class="code">WHATSAPP_COUNTRY_CODE=39</pre>
+        <div class="note">Set <code>default_country_code</code> to <code>null</code> if your contacts
+          span several countries. A bare local number is then refused rather than guessed at, which
+          is the safer failure.</div>
+      </div>
+
+      <div class="sec" id="i-verify">
+        <h2>Verify</h2>
+        <pre class="code">php artisan whatsapp:url "333 123 4567" "&lt;p&gt;Hi &lt;b&gt;Sarah&lt;/b&gt;&lt;/p&gt;"</pre>
+        <div class="out">Hi *Sarah*
+
+https://wa.me/393331234567?text=Hi%20%2ASarah%2A</div>
+        <p style="margin-top:1.1rem"><code>php artisan whatsapp:status</code> prints the resolved
+          configuration. With the Cloud API off it says plainly that links work without any
+          credentials at all.</p>
+      </div>
+
+      <div class="sec" id="i-optional">
+        <h2>Optional extras</h2>
+        <pre class="code"><span class="c"># QR codes</span>
+composer require bacon/bacon-qr-code
+
+<span class="c"># Sending, once you have a Meta Business account</span>
+WHATSAPP_CLOUD_ENABLED=true
+WHATSAPP_PHONE_NUMBER_ID=123456789012345
+WHATSAPP_BUSINESS_ACCOUNT_ID=098765432109876
+WHATSAPP_ACCESS_TOKEN=EAAG...</pre>
+        <div class="note"><b>The quickstart token expires after 24 hours.</b> The one offered by the
+          Meta app dashboard's panel cannot be renewed. Production needs a System User token —
+          Business Settings → System Users → Generate — with <code>whatsapp_business_messaging</code>
+          and <code>whatsapp_business_management</code>. <code>whatsapp:status</code> warns when a
+          token looks temporary.</div>
+      </div>
+
+      <div class="pager">
+        <a href="#/home"><span>Previous</span><b>Introduction</b></a>
+        <a class="next" href="#/guide"><span>Next</span><b>Guide</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── GUIDE ─────────── -->
+    <section class="page" id="guide">
+      <h1>Guide</h1>
+      <p class="lede">Links, numbers, formatting, QR codes and sending — in the order you meet them.</p>
+
+      <div class="sec" id="g-links">
+        <h2>Building a link</h2>
+        <pre class="code"><span class="k">use</span> Gabrielesbaiz\WhatsappToolkit\Facades\WhatsappToolkit;
+
+WhatsappToolkit::<span class="k">to</span>(<span class="s">'+39 333 123 4567'</span>)-&gt;<span class="k">text</span>(<span class="s">'Hello'</span>)-&gt;<span class="k">url</span>();
+WhatsappToolkit::<span class="k">to</span>(<span class="s">'333 123 4567'</span>)-&gt;<span class="k">html</span>(<span class="s">'&lt;p&gt;Hi &lt;b&gt;Sarah&lt;/b&gt;&lt;/p&gt;'</span>)-&gt;<span class="k">url</span>();
+WhatsappToolkit::<span class="k">to</span>($dealer-&gt;mobile_phone)-&gt;<span class="k">markdown</span>(<span class="s">'**Quote** ready'</span>)-&gt;<span class="k">url</span>();
+
+<span class="c">// the one-liner, when a call site wants nothing but a URL</span>
+WhatsappToolkit::<span class="k">url</span>($dealer-&gt;mobile_phone, $body);</pre>
+        <p style="margin-top:1.1rem">Terminal methods are <code>url()</code>, <code>link()</code>,
+          <code>qr()</code>, <code>qrDataUri()</code>, <code>send()</code>, <code>message()</code>,
+          <code>toArray()</code>, and casting to string, which gives the URL.</p>
+      </div>
+
+      <div class="sec" id="g-builder">
+        <h2>The builder is immutable</h2>
+        <p>Every method returns a new instance. Describe a message once and address it as many times
+          as you need, without a shared object mutating inside a loop.</p>
+        <pre class="code">$reminder = WhatsappToolkit::<span class="k">chat</span>()
+    -&gt;<span class="k">markdown</span>(<span class="s">'Quote **:number** expires tomorrow.'</span>);
+
+<span class="k">foreach</span> ($dealers <span class="k">as</span> $dealer) {
+    $links[$dealer-&gt;id] = $reminder-&gt;<span class="k">to</span>($dealer-&gt;mobile_phone)-&gt;<span class="k">url</span>();
+}</pre>
+      </div>
+
+      <div class="sec" id="g-targets">
+        <h2>Link flavours</h2>
+        <div class="scroller"><table>
+          <thead><tr><th>Flavour</th><th class="mono">Produces</th><th>When</th></tr></thead>
+          <tbody>
+            <tr><td><b>WaMe</b></td><td class="mono">https://wa.me/393331234567?text=…</td><td>The default. Shortest URL, sparsest QR</td></tr>
+            <tr><td><b>Api</b></td><td class="mono">https://api.whatsapp.com/send?phone=…</td><td>What 1.x produced</td></tr>
+            <tr><td><b>Web</b></td><td class="mono">https://web.whatsapp.com/send?phone=…</td><td>Desktop-only back office</td></tr>
+            <tr><td><b>Deep</b></td><td class="mono">whatsapp://send?phone=…</td><td>Opens the app, never a browser</td></tr>
+            <tr><td><b>Business</b></td><td class="mono">https://wa.me/message/ABCDE12345</td><td>A code replaces the number</td></tr>
+          </tbody>
+        </table></div>
+        <pre class="code"><span class="k">use</span> Gabrielesbaiz\WhatsappToolkit\Enums\LinkTarget;
+
+$chat-&gt;<span class="k">url</span>(LinkTarget::Deep);          <span class="c">// once</span>
+$chat-&gt;<span class="k">target</span>(LinkTarget::Api)-&gt;<span class="k">url</span>();  <span class="c">// for this chat</span>
+
+WhatsappToolkit::<span class="k">chat</span>()-&gt;<span class="k">shortCode</span>(<span class="s">'ABCDE12345'</span>)-&gt;<span class="k">url</span>();</pre>
+      </div>
+
+      <div class="sec" id="g-blade">
+        <h2>In Blade</h2>
+        <pre class="code">&lt;<span class="k">x-whatsapp-link</span> :to="<span class="s">$dealer-&gt;mobile_phone</span>"
+                 :message="<span class="s">$body</span>"
+                 class="btn btn-success"&gt;
+    Chat on WhatsApp
+&lt;/<span class="k">x-whatsapp-link</span>&gt;
+
+&lt;a href="<span class="k">@whatsappUrl</span>($dealer-&gt;mobile_phone, $body)" target="_blank"&gt;WhatsApp&lt;/a&gt;</pre>
+        <div class="scroller"><table>
+          <thead><tr><th>Attribute</th><th class="mono">Default</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">to</td><td class="mono">—</td><td>The recipient, in any format</td></tr>
+            <tr><td class="mono">message</td><td class="mono">null</td><td>The prefilled body</td></tr>
+            <tr><td class="mono">format</td><td class="mono">html</td><td><code>html</code>, <code>markdown</code> or <code>text</code></td></tr>
+            <tr><td class="mono">target</td><td class="mono">config</td><td><code>wa.me</code>, <code>api</code>, <code>web</code>, <code>deep</code>, <code>business</code></td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:1.1rem">Anything else you pass lands on the <code>&lt;a&gt;</code>. The
+          component adds <code>target="_blank" rel="noopener noreferrer"</code>, escapes the
+          <code>&amp;</code> between query parameters, and renders <strong>nothing at all</strong>
+          when the number cannot be normalised — a dead chat link is worse than no link.</p>
+      </div>
+
+      <div class="sec" id="g-numbers">
+        <h2>Phone numbers</h2>
+        <pre class="code">$number = WhatsappToolkit::<span class="k">number</span>(<span class="s">'0039 333/123-4567'</span>);
+
+$number-&gt;<span class="k">waId</span>();      <span class="c">// "393331234567"   ← what WhatsApp dials</span>
+$number-&gt;<span class="k">e164</span>();      <span class="c">// "+393331234567"  ← what to store</span>
+$number-&gt;<span class="k">national</span>();  <span class="c">// "3331234567"</span>
+
+WhatsappToolkit::<span class="k">tryNumber</span>(<span class="s">'nonsense'</span>);   <span class="c">// null, no exception</span></pre>
+        <p style="margin-top:1.1rem">Validate with the rule, store with the cast:</p>
+        <pre class="code"><span class="k">use</span> Gabrielesbaiz\WhatsappToolkit\Casts\AsWhatsappNumber;
+<span class="k">use</span> Gabrielesbaiz\WhatsappToolkit\Rules\WhatsappNumber;
+
+$request-&gt;<span class="k">validate</span>([
+    <span class="s">'mobile_phone'</span>  =&gt; [<span class="s">'required'</span>, <span class="k">new</span> WhatsappNumber],
+    <span class="s">'foreign_phone'</span> =&gt; [<span class="s">'required'</span>, WhatsappNumber::<span class="k">international</span>()],
+    <span class="s">'uk_phone'</span>      =&gt; [<span class="s">'required'</span>, <span class="k">new</span> WhatsappNumber(<span class="s">'44'</span>)],
+]);
+
+<span class="c">// in the model — the column then always holds E.164</span>
+<span class="k">protected function</span> casts(): <span class="k">array</span>
+{
+    <span class="k">return</span> [<span class="s">'mobile_phone'</span> =&gt; AsWhatsappNumber::<span class="k">class</span>];
+}</pre>
+        <div class="note">When Meta hands you a <code>wa_id</code> — in a send response or a webhook —
+          that value is canonical. Keep it with <code>PhoneNumber::fromWaId()</code> and address later
+          messages with it; for a few countries it differs from the number you sent.</div>
+      </div>
+
+      <div class="sec" id="g-formatting">
+        <h2>Formatting</h2>
+        <div class="scroller"><table>
+          <thead><tr><th>HTML</th><th class="mono">Becomes</th><th>HTML</th><th class="mono">Becomes</th></tr></thead>
+          <tbody>
+            <tr><td>&lt;b&gt;, &lt;strong&gt;</td><td class="mono">*bold*</td><td>&lt;ul&gt;&lt;li&gt;</td><td class="mono">- item</td></tr>
+            <tr><td>&lt;i&gt;, &lt;em&gt;</td><td class="mono">_italic_</td><td>&lt;ol&gt;&lt;li&gt;</td><td class="mono">1. item, per list</td></tr>
+            <tr><td>&lt;s&gt;, &lt;del&gt;</td><td class="mono">~strikethrough~</td><td>&lt;blockquote&gt;</td><td class="mono">&gt; quoted</td></tr>
+            <tr><td>&lt;code&gt;, &lt;pre&gt;</td><td class="mono">```monospace```</td><td>&lt;a href="u"&gt;t&lt;/a&gt;</td><td class="mono">t (u)</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:1.1rem">Entities are decoded, so <code>&amp;eacute;</code> arrives as é
+          rather than literally — while markup that was escaped in the source stays escaped:
+          <code>&amp;lt;b&amp;gt;</code> comes out as the four characters <code>&lt;b&gt;</code>,
+          not as bold. Links keep their destination; set <code>format.links</code> to
+          <code>strip</code> for the old behaviour.</p>
+        <pre class="code">WhatsappToolkit::<span class="k">format</span>(<span class="s">'Go &lt;a href="https://novias.it"&gt;here&lt;/a&gt; now'</span>);
+<span class="c">// "Go here (https://novias.it) now"</span></pre>
+      </div>
+
+      <div class="sec" id="g-templates">
+        <h2>Named templates</h2>
+        <p>Bodies used over and over belong in config rather than in a controller or a Nova action.</p>
+        <pre class="code"><span class="c">// config/whatsapp-toolkit.php</span>
+<span class="s">'templates'</span> =&gt; [
+    <span class="s">'quotation_followup'</span> =&gt; <span class="s">'Good morning :name, quote **:number** is ready.'</span>,
+],</pre>
+        <pre class="code">WhatsappToolkit::<span class="k">to</span>($phone)
+    -&gt;<span class="k">template</span>(<span class="s">'quotation_followup'</span>, [<span class="s">'name'</span> =&gt; $dealer-&gt;name, <span class="s">'number'</span> =&gt; $q-&gt;number])
+    -&gt;<span class="k">url</span>();</pre>
+        <p style="margin-top:1.1rem">Templates are Markdown, placeholders are <code>:name</code> style,
+          and the longest key is replaced first so <code>:name</code> never eats the start of
+          <code>:name_full</code>. These are local templates for prefilled links — unrelated to the
+          approved templates the Cloud API requires.</p>
+      </div>
+
+      <div class="sec" id="g-qr">
+        <h2>QR codes</h2>
+        <pre class="code">composer require bacon/bacon-qr-code</pre>
+        <pre class="code">$chat-&gt;<span class="k">qr</span>();            <span class="c">// HtmlString: &lt;svg …&gt;</span>
+$chat-&gt;<span class="k">qr</span>(<span class="s">480</span>);         <span class="c">// a different size, just this once</span>
+$chat-&gt;<span class="k">qrDataUri</span>();     <span class="c">// "data:image/svg+xml;base64,…"</span></pre>
+        <p style="margin-top:1.1rem">QR always encodes the short <code>wa.me</code> form, whatever the
+          configured default — fewer characters make a sparser code, and a sparse code is what
+          survives being printed on an invoice and photographed on a shop counter.</p>
+      </div>
+
+      <div class="sec" id="g-sending">
+        <h2>Sending through the Cloud API</h2>
+        <pre class="code">WhatsappToolkit::<span class="k">to</span>($dealer-&gt;mobile_phone)-&gt;<span class="k">html</span>($body)-&gt;<span class="k">send</span>();
+
+$api = WhatsappToolkit::<span class="k">cloud</span>();
+
+$api-&gt;<span class="k">send</span>(TemplateMessage::<span class="k">make</span>(<span class="s">'quotation_ready'</span>, <span class="s">'it'</span>)-&gt;<span class="k">body</span>($q-&gt;number)-&gt;<span class="k">to</span>($phone));
+$api-&gt;<span class="k">send</span>(MediaMessage::<span class="k">id</span>(MediaType::Document, $mediaId)
+        -&gt;<span class="k">filename</span>(<span class="s">'Quote Q-7.pdf'</span>)-&gt;<span class="k">to</span>($phone));
+$api-&gt;<span class="k">send</span>(InteractiveButtonsMessage::<span class="k">make</span>(<span class="s">'Confirm?'</span>)
+        -&gt;<span class="k">button</span>(<span class="s">'yes'</span>, <span class="s">'Yes'</span>)-&gt;<span class="k">button</span>(<span class="s">'no'</span>, <span class="s">'No'</span>)-&gt;<span class="k">to</span>($phone));</pre>
+        <p style="margin-top:1.1rem">Every message validates itself in its constructor, so a fourth
+          reply button or a 21-character button title fails while you are building it rather than
+          after a round trip.</p>
+        <div class="note"><b>The 24-hour window.</b> Free-form messages only reach someone who wrote
+          to you in the last 24 hours. Outside it WhatsApp accepts approved templates only, and the
+          package raises <code>ReEngagementRequiredException</code>. This package stores nothing, so
+          tracking the window is yours — the <code>WhatsappMessageReceived</code> event is where.</div>
+      </div>
+
+      <div class="sec" id="g-notifications">
+        <h2>Notifications</h2>
+        <pre class="code"><span class="k">public function</span> via($notifiable): <span class="k">array</span>
+{
+    <span class="k">return</span> [<span class="s">'whatsapp'</span>];
+}
+
+<span class="k">public function</span> toWhatsapp($notifiable): WhatsappMessage
+{
+    <span class="k">return</span> WhatsappMessage::<span class="k">template</span>(<span class="s">'quotation_ready'</span>, <span class="s">'it'</span>)
+        -&gt;<span class="k">body</span>($this-&gt;quotation-&gt;number);
+}
+
+<span class="c">// on the notifiable</span>
+<span class="k">public function</span> routeNotificationForWhatsapp(): <span class="k">string</span>
+{
+    <span class="k">return</span> $this-&gt;mobile_phone;
+}</pre>
+        <p style="margin-top:1.1rem">Return <code>['to' =&gt; …, 'from' =&gt; $phoneNumberId]</code>
+          instead to send from a second business number. A notifiable with no route raises
+          <code>InvalidPhoneNumberException</code> — dropping a notification silently is the worse
+          failure. With the Cloud API disabled the channel returns without sending, so a staging
+          environment needs no branching.</p>
+      </div>
+
+      <div class="sec" id="g-webhook">
+        <h2>Receiving replies</h2>
+        <pre class="code">WHATSAPP_WEBHOOK_ENABLED=true
+WHATSAPP_WEBHOOK_VERIFY_TOKEN=a-random-string-you-choose
+WHATSAPP_APP_SECRET=the-app-secret-from-the-meta-dashboard</pre>
+        <pre class="code">Event::<span class="k">listen</span>(WhatsappMessageReceived::<span class="k">class</span>, <span class="k">function</span> ($event) {
+    $event-&gt;message-&gt;from;         <span class="c">// "393331234567" — the canonical wa_id</span>
+    $event-&gt;message-&gt;text;         <span class="c">// "Morning"</span>
+    $event-&gt;message-&gt;contactName;  <span class="c">// "Sarah"</span>
+    $event-&gt;message-&gt;<span class="k">mediaId</span>();   <span class="c">// for an image, document, audio, video</span>
+});</pre>
+        <p style="margin-top:1.1rem">Point Meta at <code>https://your-app.test/whatsapp/webhook</code>.
+          Every request is verified against <code>X-Hub-Signature-256</code>; an unsigned one gets a
+          bare 403. The package then dispatches events and does nothing else — it never replies,
+          never marks messages read, and never stores anything.</p>
+      </div>
+
+      <div class="sec" id="g-nova">
+        <h2>Nova</h2>
+        <pre class="code"><span class="k">use</span> Gabrielesbaiz\WhatsappToolkit\Nova\SendWhatsappMessage;
+
+<span class="k">public function</span> actions(NovaRequest $request): <span class="k">array</span>
+{
+    <span class="k">return</span> [(<span class="k">new</span> SendWhatsappMessage)-&gt;<span class="k">onlyOnDetail</span>()];
+}
+
+<span class="c">// on the model</span>
+<span class="k">public function</span> whatsappRecipients(): Collection
+{
+    <span class="k">return</span> <span class="k">collect</span>([
+        [<span class="s">'value'</span> =&gt; $this-&gt;mobile_phone, <span class="s">'label'</span> =&gt; $this-&gt;name, <span class="s">'group'</span> =&gt; <span class="k">__</span>(<span class="s">'Contacts'</span>)],
+    ]);
+}</pre>
+        <p style="margin-top:1.1rem">Nova is a suggested dependency — nothing in this class is loaded
+          unless you reference it. <code>recipientsFrom('otherMethod')</code> and
+          <code>recipients($rows)</code> override where the list comes from.</p>
+      </div>
+
+      <div class="pager">
+        <a href="#/install"><span>Previous</span><b>Installation</b></a>
+        <a class="next" href="#/configuration"><span>Next</span><b>Configuration</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── CONFIGURATION ─────────── -->
+    <section class="page" id="configuration">
+      <h1>Configuration</h1>
+      <p class="lede">Every key in <code>config/whatsapp-toolkit.php</code>, its default, and what
+        changing it does.</p>
+
+      <div class="sec" id="c-publish">
+        <h2>Publishing</h2>
+        <pre class="code">php artisan vendor:publish --tag="whatsapp-toolkit-config"</pre>
+        <p style="margin-top:1.1rem">Nothing needs publishing to build links. The defaults produce a
+          working <code>wa.me</code> URL with the Italian country code applied to local numbers.</p>
+      </div>
+
+      <div class="sec" id="c-links">
+        <h2>Numbers, links and formatting</h2>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Key</th><th class="mono">Default</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">default_country_code</td><td class="mono">'39'</td><td>Applied to bare local numbers. <code>null</code> refuses them instead</td></tr>
+            <tr><td class="mono">link.target</td><td class="mono">LinkTarget::WaMe</td><td>Which link flavour is built</td></tr>
+            <tr><td class="mono">link.max_length</td><td class="mono">4096</td><td>The body ceiling, in characters</td></tr>
+            <tr><td class="mono">link.on_overflow</td><td class="mono">'truncate'</td><td><code>truncate</code>, <code>throw</code> or <code>ignore</code></td></tr>
+            <tr><td class="mono">format.memo</td><td class="mono">true</td><td>Memoise formatted bodies for the request</td></tr>
+            <tr><td class="mono">format.memo_size</td><td class="mono">128</td><td>How many to keep</td></tr>
+            <tr><td class="mono">format.links</td><td class="mono">'append'</td><td><code>append</code> keeps <code>label (url)</code>; <code>strip</code> keeps only the label</td></tr>
+            <tr><td class="mono">templates</td><td class="mono">[]</td><td>Named Markdown bodies with <code>:placeholders</code></td></tr>
+            <tr><td class="mono">qr.size</td><td class="mono">300</td><td>Pixels</td></tr>
+            <tr><td class="mono">qr.margin</td><td class="mono">2</td><td>Quiet zone, in modules</td></tr>
+            <tr><td class="mono">qr.error_correction</td><td class="mono">'M'</td><td><code>L</code>, <code>M</code>, <code>Q</code> or <code>H</code></td></tr>
+          </tbody>
+        </table></div>
+        <div class="note">A prefilled body travels inside a URL, and clients cut long URLs at
+          different points. <code>on_overflow</code> decides what happens at
+          <code>max_length</code>: cut at a word boundary, refuse loudly, or let it through.</div>
+      </div>
+
+      <div class="sec" id="c-cloud">
+        <h2>Cloud API</h2>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Key</th><th class="mono">Default</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">cloud.enabled</td><td class="mono">false</td><td>The whole sending layer, on or off</td></tr>
+            <tr><td class="mono">cloud.phone_number_id</td><td class="mono">null</td><td>Your business number's id</td></tr>
+            <tr><td class="mono">cloud.business_account_id</td><td class="mono">null</td><td>Your WABA id</td></tr>
+            <tr><td class="mono">cloud.access_token</td><td class="mono">null</td><td>System User token in production</td></tr>
+            <tr><td class="mono">cloud.api_version</td><td class="mono">'v21.0'</td><td>Graph API version</td></tr>
+            <tr><td class="mono">cloud.base_url</td><td class="mono">graph.facebook.com</td><td>Point at a sandbox if you have one</td></tr>
+            <tr><td class="mono">cloud.timeout</td><td class="mono">10</td><td>Seconds</td></tr>
+            <tr><td class="mono">cloud.connect_timeout</td><td class="mono">5</td><td>Seconds</td></tr>
+            <tr><td class="mono">cloud.retry.times</td><td class="mono">3</td><td>Attempts, for transient failures only</td></tr>
+            <tr><td class="mono">cloud.retry.sleep</td><td class="mono">200</td><td>Backoff base, milliseconds</td></tr>
+            <tr><td class="mono">cloud.retry.max</td><td class="mono">5000</td><td>Backoff ceiling, milliseconds</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:1.1rem">Leaving <code>enabled</code> false costs nothing: no credentials
+          are read, no routes are registered, and the notification channel returns without sending.
+          That is what lets this package stay a link builder for the people who only ever wanted one.</p>
+      </div>
+
+      <div class="sec" id="c-webhook">
+        <h2>Webhook and logging</h2>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Key</th><th class="mono">Default</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">webhook.enabled</td><td class="mono">false</td><td>Whether the inbound route exists at all</td></tr>
+            <tr><td class="mono">webhook.path</td><td class="mono">'whatsapp/webhook'</td><td>Where it lives</td></tr>
+            <tr><td class="mono">webhook.domain</td><td class="mono">null</td><td>Restrict it to one domain</td></tr>
+            <tr><td class="mono">webhook.middleware</td><td class="mono">['api']</td><td>Keep this minimal</td></tr>
+            <tr><td class="mono">webhook.verify_token</td><td class="mono">null</td><td>Your half of the subscription handshake</td></tr>
+            <tr><td class="mono">webhook.app_secret</td><td class="mono">null</td><td>Required — an empty one rejects every request</td></tr>
+            <tr><td class="mono">webhook.idempotency.enabled</td><td class="mono">true</td><td>Drop repeat deliveries</td></tr>
+            <tr><td class="mono">webhook.idempotency.store</td><td class="mono">null</td><td>Use a shared store in production</td></tr>
+            <tr><td class="mono">webhook.idempotency.ttl</td><td class="mono">86400</td><td>How long ids are remembered</td></tr>
+            <tr><td class="mono">logging.channel</td><td class="mono">null</td><td><code>null</code> means nothing is logged</td></tr>
+            <tr><td class="mono">logging.redact_content</td><td class="mono">true</td><td>Keep message bodies out of logs</td></tr>
+          </tbody>
+        </table></div>
+        <div class="note"><b>An <code>array</code> cache store cannot deduplicate across processes.</b>
+          Meta delivers in parallel and redelivers on any non-2xx, so name a shared store in
+          <code>webhook.idempotency.store</code> in production.</div>
+      </div>
+
+      <div class="pager">
+        <a href="#/guide"><span>Previous</span><b>Guide</b></a>
+        <a class="next" href="#/commands"><span>Next</span><b>Commands</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── COMMANDS ─────────── -->
+    <section class="page" id="commands">
+      <h1>Commands</h1>
+      <p class="lede">Two, both for finding out what the package will actually do before your
+        application does it.</p>
+
+      <div class="sec" id="cm-table">
+        <h2>The commands</h2>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Command</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">whatsapp:url {phone} {message?}</td><td>Print the formatted body and the link</td></tr>
+            <tr><td class="mono">whatsapp:url --target=</td><td><code>wa.me</code>, <code>api</code>, <code>web</code>, <code>deep</code> or <code>business</code></td></tr>
+            <tr><td class="mono">whatsapp:status</td><td>Show the resolved configuration and ping the Cloud API</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="sec" id="cm-url">
+        <h2>whatsapp:url</h2>
+        <pre class="code">php artisan whatsapp:url "333 123 4567" "&lt;p&gt;Hi &lt;b&gt;Sarah&lt;/b&gt;&lt;/p&gt;"
+php artisan whatsapp:url "+39 333 123 4567" "Hello" --target=api</pre>
+        <div class="out">Hi *Sarah*
+
+https://wa.me/393331234567?text=Hi%20%2ASarah%2A</div>
+        <p style="margin-top:1.1rem">It prints the formatted body first and the link second, which is
+          the quickest way to tell a formatting problem from a normalisation one.</p>
+      </div>
+
+      <div class="sec" id="cm-status">
+        <h2>whatsapp:status</h2>
+        <p>Answers "why doesn't it send?" before anyone has to ask it. Nearly every Cloud API failure
+          report turns out to be a missing credential or the 24-hour quickstart token.</p>
+        <pre class="code">php artisan whatsapp:status</pre>
+        <div class="out">Default country code ........ 39
+Link target ................. https://wa.me/39000000000
+Cloud API ................... disabled
+
+INFO  Click-to-chat links work without any Cloud API credentials.</div>
+        <p style="margin-top:1.1rem">With the Cloud API enabled it masks the token, flags one that
+          looks temporary, pings Meta and prints the number's verified name and quality rating.</p>
+      </div>
+
+      <div class="pager">
+        <a href="#/configuration"><span>Previous</span><b>Configuration</b></a>
+        <a class="next" href="#/api"><span>Next</span><b>API reference</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── API ─────────── -->
+    <section class="page" id="api">
+      <h1>API reference</h1>
+      <p class="lede">Every public method, what it returns, and what it does.</p>
+
+      <div class="sec" id="a-facade">
+        <h2>The facade</h2>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Method</th><th class="mono">Returns</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">to($recipient)</td><td class="mono">Chat</td><td>Start a chat addressed to a number</td></tr>
+            <tr><td class="mono">chat()</td><td class="mono">Chat</td><td>Start one with no recipient yet</td></tr>
+            <tr><td class="mono">number($value)</td><td class="mono">PhoneNumber</td><td>Normalise, or throw</td></tr>
+            <tr><td class="mono">tryNumber($value)</td><td class="mono">?PhoneNumber</td><td>Normalise, or <code>null</code></td></tr>
+            <tr><td class="mono">format($html)</td><td class="mono">string</td><td>HTML → WhatsApp markup</td></tr>
+            <tr><td class="mono">formatMarkdown($md)</td><td class="mono">string</td><td>Markdown → WhatsApp markup</td></tr>
+            <tr><td class="mono">toHtml($text)</td><td class="mono">string</td><td>WhatsApp markup → escaped HTML</td></tr>
+            <tr><td class="mono">formatAs($body, $format)</td><td class="mono">string</td><td>Either, by <code>MessageFormat</code></td></tr>
+            <tr><td class="mono">url($recipient, $html = null)</td><td class="mono">string</td><td>The one-liner</td></tr>
+            <tr><td class="mono">renderTemplate($name, $vals = [])</td><td class="mono">string</td><td>Fill a config template</td></tr>
+            <tr><td class="mono">cloud()</td><td class="mono">CloudApi</td><td>The Cloud API client</td></tr>
+            <tr><td class="mono">fake()</td><td class="mono">CloudApiFake</td><td>Swap the client for a recorder</td></tr>
+            <tr><td class="mono">qr()</td><td class="mono">QrRenderer</td><td>The QR renderer</td></tr>
+            <tr><td class="mono">defaultTarget()</td><td class="mono">LinkTarget</td><td>The configured link flavour</td></tr>
+            <tr><td class="mono">maxLength()</td><td class="mono">int</td><td>The configured body ceiling</td></tr>
+            <tr><td class="mono">overflowStrategy()</td><td class="mono">string</td><td><code>truncate</code>, <code>throw</code> or <code>ignore</code></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="sec" id="a-chat">
+        <h2>Chat</h2>
+        <p>Every setter returns a new instance.</p>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Method</th><th class="mono">Returns</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">to($recipient)</td><td class="mono">Chat</td><td>Address it; a string or a <code>PhoneNumber</code></td></tr>
+            <tr><td class="mono">shortCode($code)</td><td class="mono">Chat</td><td>Address a business short link instead</td></tr>
+            <tr><td class="mono">text($body)</td><td class="mono">Chat</td><td>A body already in WhatsApp markup</td></tr>
+            <tr><td class="mono">html($body)</td><td class="mono">Chat</td><td>A body from a rich-text editor</td></tr>
+            <tr><td class="mono">markdown($body)</td><td class="mono">Chat</td><td>A body in Markdown</td></tr>
+            <tr><td class="mono">template($name, $vals = [])</td><td class="mono">Chat</td><td>A body from config</td></tr>
+            <tr><td class="mono">target($target)</td><td class="mono">Chat</td><td>Override the link flavour</td></tr>
+            <tr><td class="mono">truncate($limit)</td><td class="mono">Chat</td><td>Cut the body at a word boundary</td></tr>
+            <tr><td class="mono">withoutPreview()</td><td class="mono">Chat</td><td>Cloud API: no link preview card</td></tr>
+            <tr><td class="mono">message()</td><td class="mono">Message</td><td>The formatted body</td></tr>
+            <tr><td class="mono">url($target = null)</td><td class="mono">string</td><td>The click-to-chat URL</td></tr>
+            <tr><td class="mono">link($label, $attributes = [])</td><td class="mono">HtmlString</td><td>An escaped <code>&lt;a&gt;</code></td></tr>
+            <tr><td class="mono">qr($size = null)</td><td class="mono">HtmlString</td><td>An SVG QR code</td></tr>
+            <tr><td class="mono">qrDataUri($size = null)</td><td class="mono">string</td><td>The same, as a data URI</td></tr>
+            <tr><td class="mono">send()</td><td class="mono">MessageResponse</td><td>Deliver it through the Cloud API</td></tr>
+            <tr><td class="mono">recipient()</td><td class="mono">?PhoneNumber</td><td>Who it is addressed to</td></tr>
+            <tr><td class="mono">toArray()</td><td class="mono">array</td><td><code>['to', 'text', 'url']</code></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="sec" id="a-number">
+        <h2>PhoneNumber and Message</h2>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Method</th><th class="mono">Returns</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">PhoneNumber::parse($v, $default = null)</td><td class="mono">PhoneNumber</td><td>Normalise, or throw. <code>''</code> refuses local numbers</td></tr>
+            <tr><td class="mono">PhoneNumber::tryParse($v, $default = null)</td><td class="mono">?PhoneNumber</td><td>Normalise, or <code>null</code></td></tr>
+            <tr><td class="mono">PhoneNumber::fromWaId($waId)</td><td class="mono">PhoneNumber</td><td>Wrap a canonical id without re-deriving it</td></tr>
+            <tr><td class="mono">waId()</td><td class="mono">string</td><td>Digits only — what WhatsApp dials</td></tr>
+            <tr><td class="mono">e164()</td><td class="mono">string</td><td><code>+</code> and digits — what to store</td></tr>
+            <tr><td class="mono">national()</td><td class="mono">string</td><td>Without the country code</td></tr>
+            <tr><td class="mono">equals($other)</td><td class="mono">bool</td><td>Same number</td></tr>
+            <tr><td class="mono">Message::length()</td><td class="mono">int</td><td>Characters, counted with <code>mb_strlen()</code></td></tr>
+            <tr><td class="mono">Message::truncate($limit, $ellipsis)</td><td class="mono">Message</td><td>Cut at a word boundary</td></tr>
+            <tr><td class="mono">Message::encoded()</td><td class="mono">string</td><td><code>rawurlencode</code>d, for a query string</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="sec" id="a-cloud">
+        <h2>CloudApi and messages</h2>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Method</th><th class="mono">Returns</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">send($message, $to = null)</td><td class="mono">MessageResponse</td><td>Send one message</td></tr>
+            <tr><td class="mono">sendMany($messages)</td><td class="mono">array</td><td>Send several, in order</td></tr>
+            <tr><td class="mono">markRead($messageId)</td><td class="mono">bool</td><td>Mark an inbound message read</td></tr>
+            <tr><td class="mono">uploadMedia($path, $mime = null)</td><td class="mono">MediaResponse</td><td>Upload a file, get an id</td></tr>
+            <tr><td class="mono">mediaUrl($mediaId)</td><td class="mono">MediaResponse</td><td>Look one up</td></tr>
+            <tr><td class="mono">downloadMedia($mediaId)</td><td class="mono">string</td><td>Fetch the bytes</td></tr>
+            <tr><td class="mono">post($endpoint, $payload)</td><td class="mono">array</td><td>Escape hatch for unmodelled endpoints</td></tr>
+            <tr><td class="mono">usingPhoneNumberId($id)</td><td class="mono">static</td><td>Send from another business number</td></tr>
+          </tbody>
+        </table></div>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Message class</th><th>Built with</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">TextMessage</td><td><code>::make($body)</code>, <code>-&gt;previewUrl(false)</code></td></tr>
+            <tr><td class="mono">TemplateMessage</td><td><code>::make($name, $lang)</code>, <code>-&gt;body(…)</code>, <code>-&gt;header(…)</code>, <code>-&gt;button($i, $payload)</code></td></tr>
+            <tr><td class="mono">MediaMessage</td><td><code>::id($type, $id)</code> or <code>::link($type, $url)</code>, <code>-&gt;caption()</code>, <code>-&gt;filename()</code></td></tr>
+            <tr><td class="mono">InteractiveButtonsMessage</td><td><code>::make($body)</code>, <code>-&gt;button($id, $title)</code>, <code>-&gt;header()</code>, <code>-&gt;footer()</code></td></tr>
+            <tr><td class="mono">LocationMessage</td><td><code>::make($lat, $lng)</code>, <code>-&gt;name()</code>, <code>-&gt;address()</code></td></tr>
+            <tr><td class="mono">ReactionMessage</td><td><code>::make($wamid, $emoji)</code>, <code>::remove($wamid)</code></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="sec" id="a-testing">
+        <h2>The fake</h2>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Assertion</th><th>Passes when</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">assertSent($type, $callback = null)</td><td>A message of this class was sent, optionally matching a closure</td></tr>
+            <tr><td class="mono">assertNotSent($type)</td><td>None of this class was</td></tr>
+            <tr><td class="mono">assertSentTo($recipient, $type = null)</td><td>Something went to this number, written any way you like</td></tr>
+            <tr><td class="mono">assertSentCount($count)</td><td>Exactly this many were sent</td></tr>
+            <tr><td class="mono">assertNothingSent()</td><td>Nothing at all was</td></tr>
+            <tr><td class="mono">assertMarkedRead($messageId)</td><td><code>markRead()</code> was called for it</td></tr>
+            <tr><td class="mono">assertMediaUploaded($path = null)</td><td>Something, or this file, was uploaded</td></tr>
+            <tr><td class="mono">sent($type = null)</td><td>Returns the recorded messages as a Collection</td></tr>
+            <tr><td class="mono">push($response|$throwable)</td><td>Queues the next result, so a test can force the unhappy path</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="sec" id="a-events">
+        <h2>Events and exceptions</h2>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Event</th><th>Dispatched when</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">WhatsappMessageReceived</td><td>Someone wrote to your business number</td></tr>
+            <tr><td class="mono">WhatsappStatusUpdated</td><td>A message you sent was delivered or read</td></tr>
+            <tr><td class="mono">WhatsappMessageFailed</td><td>A message you sent could not be delivered</td></tr>
+            <tr><td class="mono">WhatsappWebhookReceived</td><td>Every verified payload, before it is split</td></tr>
+            <tr><td class="mono">WhatsappMessageSent</td><td>On the way out, when a send succeeds</td></tr>
+          </tbody>
+        </table></div>
+        <div class="scroller"><table>
+          <thead><tr><th class="mono">Meta codes</th><th class="mono">Exception</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">0, 3, 10, 190, 368</td><td class="mono">AuthenticationException</td></tr>
+            <tr><td class="mono">4, 130429, 131048, 131056</td><td class="mono">RateLimitException</td></tr>
+            <tr><td class="mono">131047</td><td class="mono">ReEngagementRequiredException</td></tr>
+            <tr><td class="mono">131026, 131030, 131051, 133010</td><td class="mono">RecipientException</td></tr>
+            <tr><td class="mono">131052, 131053</td><td class="mono">MediaException</td></tr>
+            <tr><td class="mono">132000–132016</td><td class="mono">TemplateException</td></tr>
+            <tr><td class="mono">1, 2, 5xx</td><td class="mono">TransientException</td></tr>
+          </tbody>
+        </table></div>
+        <p style="margin-top:1.1rem">All of them extend <code>CloudApiException</code>, which extends
+          <code>WhatsappToolkitException</code> — catch that one type to contain the package entirely.
+          Each carries <code>errorCode()</code>, <code>fbtraceId()</code>, <code>status()</code> and
+          <code>isRetryable()</code>.</p>
+      </div>
+
+      <div class="pager">
+        <a href="#/commands"><span>Previous</span><b>Commands</b></a>
+        <a class="next" href="#/recipes"><span>Next</span><b>Recipes</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── RECIPES ─────────── -->
+    <section class="page" id="recipes">
+      <h1>Recipes</h1>
+      <p class="lede">Whole solutions to things that actually come up.</p>
+
+      <div class="sec" id="r-rows">
+        <h2>A chat link on every row of a table</h2>
+        <pre class="code">&lt;<span class="k">@foreach</span> ($dealers <span class="k">as</span> $dealer)&gt;
+    &lt;td&gt;
+        &lt;<span class="k">x-whatsapp-link</span> :to="<span class="s">$dealer-&gt;mobile_phone</span>"
+                         :message="<span class="s">$body</span>"
+                         class="btn btn-sm"&gt;WhatsApp&lt;/<span class="k">x-whatsapp-link</span>&gt;
+    &lt;/td&gt;
+&lt;<span class="k">@endforeach</span>&gt;</pre>
+        <p style="margin-top:1.1rem">One body, many recipients: the formatted text is memoised for the
+          request, so the conversion happens once no matter how many rows there are. Rows whose number
+          cannot be normalised render no link rather than a broken one.</p>
+      </div>
+
+      <div class="sec" id="r-migrate">
+        <h2>Migrating a column of messy phone numbers</h2>
+        <pre class="code">Dealer::<span class="k">query</span>()
+    -&gt;<span class="k">whereNotNull</span>(<span class="s">'mobile_phone'</span>)
+    -&gt;<span class="k">chunkById</span>(<span class="s">500</span>, <span class="k">function</span> ($dealers) {
+        <span class="k">foreach</span> ($dealers <span class="k">as</span> $dealer) {
+            $number = WhatsappToolkit::<span class="k">tryNumber</span>($dealer-&gt;mobile_phone);
+
+            $dealer-&gt;<span class="k">update</span>([
+                <span class="s">'mobile_phone'</span> =&gt; $number?-&gt;<span class="k">e164</span>(),
+                <span class="s">'whatsapp_reachable'</span> =&gt; $number !== <span class="k">null</span>,
+            ]);
+        }
+    });</pre>
+        <p style="margin-top:1.1rem"><code>tryNumber()</code> rather than <code>number()</code>, so one
+          unusable row does not stop the migration. Add the <code>AsWhatsappNumber</code> cast
+          afterwards and new rows normalise themselves.</p>
+      </div>
+
+      <div class="sec" id="r-invoice">
+        <h2>A QR code on a printed invoice</h2>
+        <pre class="code">$chat = WhatsappToolkit::<span class="k">to</span>(<span class="k">config</span>(<span class="s">'company.support_phone'</span>))
+    -&gt;<span class="k">template</span>(<span class="s">'invoice_question'</span>, [<span class="s">'number'</span> =&gt; $invoice-&gt;number]);
+
+$pdf = Pdf::<span class="k">loadView</span>(<span class="s">'invoices.show'</span>, [
+    <span class="s">'invoice'</span> =&gt; $invoice,
+    <span class="s">'qr'</span> =&gt; $chat-&gt;<span class="k">qrDataUri</span>(),
+]);</pre>
+        <p style="margin-top:1.1rem">A data URI embeds without a second HTTP request, which is what a
+          PDF renderer needs. Keep the prefilled body short — every character makes the code denser.</p>
+      </div>
+
+      <div class="sec" id="r-queue">
+        <h2>Queueing a template send that respects rate limits</h2>
+        <pre class="code"><span class="k">public function</span> handle(): <span class="k">void</span>
+{
+    <span class="k">try</span> {
+        WhatsappToolkit::<span class="k">cloud</span>()-&gt;<span class="k">send</span>(
+            TemplateMessage::<span class="k">make</span>(<span class="s">'quotation_ready'</span>, <span class="s">'it'</span>)
+                -&gt;<span class="k">body</span>($this-&gt;quotation-&gt;number)
+                -&gt;<span class="k">to</span>($this-&gt;dealer-&gt;mobile_phone)
+        );
+    } <span class="k">catch</span> (RateLimitException $e) {
+        $this-&gt;<span class="k">release</span>($e-&gt;<span class="k">retryAfter</span>() ?? <span class="s">60</span>);
+    } <span class="k">catch</span> (ReEngagementRequiredException|RecipientException $e) {
+        $this-&gt;<span class="k">fail</span>($e);   <span class="c">// neither will ever succeed on a retry</span>
+    }
+}</pre>
+      </div>
+
+      <div class="sec" id="r-window">
+        <h2>Recording the 24-hour window</h2>
+        <pre class="code">Event::<span class="k">listen</span>(WhatsappMessageReceived::<span class="k">class</span>, <span class="k">function</span> ($event) {
+    Dealer::<span class="k">where</span>(<span class="s">'wa_id'</span>, $event-&gt;message-&gt;from)-&gt;<span class="k">update</span>([
+        <span class="s">'whatsapp_window_opened_at'</span> =&gt; <span class="k">now</span>(),
+    ]);
+});
+
+$dealer-&gt;whatsapp_window_opened_at?-&gt;<span class="k">diffInHours</span>() &lt; <span class="s">24</span>
+    ? WhatsappToolkit::<span class="k">to</span>($dealer-&gt;wa_id)-&gt;<span class="k">text</span>($body)-&gt;<span class="k">send</span>()
+    : WhatsappToolkit::<span class="k">cloud</span>()-&gt;<span class="k">send</span>(
+        TemplateMessage::<span class="k">make</span>(<span class="s">'followup'</span>, <span class="s">'it'</span>)-&gt;<span class="k">to</span>($dealer-&gt;wa_id));</pre>
+        <p style="margin-top:1.1rem">The package stores nothing, so the window is yours to track. The
+          listener matches on <code>wa_id</code> — the canonical id Meta gave you — not on the number
+          a human typed.</p>
+      </div>
+
+      <div class="sec" id="r-render">
+        <h2>Showing a reply in the browser</h2>
+        <pre class="code">&lt;div class="message"&gt;{!! WhatsappToolkit::<span class="k">toHtml</span>($message-&gt;body) !!}&lt;/div&gt;</pre>
+        <p style="margin-top:1.1rem"><code>toHtml()</code> escapes before it adds any markup, so
+          <code>{!! !!}</code> is safe here — the only tags that survive are the ones it added itself.</p>
+      </div>
+
+      <div class="sec" id="r-swap">
+        <h2>Swapping the package out in a test</h2>
+        <pre class="code">WhatsappToolkit::<span class="k">shouldReceive</span>(<span class="s">'url'</span>)-&gt;<span class="k">andReturn</span>(<span class="s">'https://wa.me/000?text=x'</span>);</pre>
+        <p style="margin-top:1.1rem">The facade resolves a real singleton through the container in 2.0,
+          so this works. It could not in 1.x, where every method was static.</p>
+      </div>
+
+      <div class="pager">
+        <a href="#/api"><span>Previous</span><b>API reference</b></a>
+        <a class="next" href="#/troubleshooting"><span>Next</span><b>Troubleshooting</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── TROUBLESHOOTING ─────────── -->
+    <section class="page" id="troubleshooting">
+      <h1>Troubleshooting</h1>
+      <p class="lede">The errors and symptoms people actually hit, and what each one means.</p>
+
+      <div class="sec" id="t-nochat">
+        <h2>The link opens WhatsApp but no conversation</h2>
+        <p>The number never reached WhatsApp in a form it could dial. In 1.x this was the normal
+          outcome: <code>formatPhoneNumber()</code> only url-encoded.</p>
+        <pre class="code">php artisan whatsapp:url "+39 333 123 4567" "test"</pre>
+        <p style="margin-top:1.1rem">If the digits look right there and wrong in your application,
+          something is bypassing the package — a hand-written anchor in Blade, or a
+          <code>'+39' . $phone</code> concatenation upstream.</p>
+      </div>
+
+      <div class="sec" id="t-invalid">
+        <h2>InvalidPhoneNumberException on a number that looks fine</h2>
+        <p>Three causes, in order of likelihood. The number is local and
+          <code>default_country_code</code> is <code>null</code>. It holds fewer than 7 or more than
+          15 digits once punctuation is stripped — an internal extension, usually. Or it is not a
+          number at all: an empty string, a placeholder like <code>-</code>, or a note someone typed
+          into the phone column. Use <code>tryNumber()</code> for data you do not control.</p>
+      </div>
+
+      <div class="sec" id="t-entities">
+        <h2>The message shows &amp;eacute; or &amp;amp; in the chat</h2>
+        <p>You are formatting with something other than this package, or you are on 1.x, which never
+          decoded entities. <code>format()</code> decodes them after stripping tags.</p>
+      </div>
+
+      <div class="sec" id="t-plus">
+        <h2>The body shows + signs where the spaces should be</h2>
+        <p>Something used <code>urlencode()</code>, which writes a space as <code>+</code>. This
+          package uses <code>rawurlencode()</code>, which writes <code>%20</code>. If you are
+          building part of the URL yourself, stop — <code>url()</code> encodes the body exactly once.</p>
+      </div>
+
+      <div class="sec" id="t-disabled">
+        <h2>ConfigurationException: the Cloud API layer is disabled</h2>
+        <p><code>cloud.enabled</code> is false, which is the default and is deliberate. Set
+          <code>WHATSAPP_CLOUD_ENABLED=true</code> and the three ids, then run
+          <code>php artisan whatsapp:status</code>. If you meant to build a link rather than send,
+          use <code>url()</code> instead of <code>send()</code>.</p>
+      </div>
+
+      <div class="sec" id="t-190">
+        <h2>AuthenticationException, code 190, and it worked yesterday</h2>
+        <p>The token expired. The one offered by the Meta dashboard's quickstart panel lasts 24 hours
+          and cannot be renewed. Generate a System User token with
+          <code>whatsapp_business_messaging</code> and <code>whatsapp_business_management</code>.</p>
+      </div>
+
+      <div class="sec" id="t-131047">
+        <h2>ReEngagementRequiredException on a message that used to go through</h2>
+        <p>More than 24 hours have passed since that contact last wrote to you. Outside that window
+          WhatsApp delivers approved templates only. Send a <code>TemplateMessage</code>, or track
+          the window yourself.</p>
+      </div>
+
+      <div class="sec" id="t-template">
+        <h2>TemplateException, code 132001 or 132000</h2>
+        <p>132001 means no approved template with that name <strong>and that language</strong> exists —
+          <code>it</code> and <code>it_IT</code> are two different templates. 132000 means the
+          parameter count does not match the template body. Count the <code>{{1}}</code> placeholders
+          in the WhatsApp Manager and pass exactly that many to <code>body()</code>, in order.</p>
+      </div>
+
+      <div class="sec" id="t-403">
+        <h2>The webhook returns 403 for every request</h2>
+        <p>Either <code>app_secret</code> is empty — which is refused, never trusted — or the
+          signature does not match the body. The usual cause of a mismatch is middleware that
+          modifies the request body before this package sees it, since the HMAC is computed over the
+          raw bytes. Keep <code>webhook.middleware</code> minimal.</p>
+        <div class="note">For the handshake: Meta sends <code>hub.mode</code>, and PHP turns the dot
+          into an underscore before it reaches the query bag. That is handled — but it is worth
+          knowing if you are debugging with a hand-made request.</div>
+      </div>
+
+      <div class="sec" id="t-twice">
+        <h2>A listener runs twice for one inbound message</h2>
+        <p>Meta redelivers on any non-2xx and occasionally duplicates on success. Ids are remembered
+          through the cache — but the <code>array</code> store cannot share them across processes, so
+          set <code>webhook.idempotency.store</code> to a shared store in production.</p>
+      </div>
+
+      <div class="sec" id="t-qr">
+        <h2>MissingDependencyException about QR codes</h2>
+        <pre class="code">composer require bacon/bacon-qr-code</pre>
+        <p style="margin-top:1.1rem">It is a suggested dependency: a package that builds links should
+          not drag a rendering library into every application that installs it.</p>
+      </div>
+
+      <div class="pager">
+        <a href="#/recipes"><span>Previous</span><b>Recipes</b></a>
+        <a class="next" href="#/security"><span>Next</span><b>Security</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── SECURITY ─────────── -->
+    <section class="page" id="security">
+      <h1>Security</h1>
+      <p class="lede">What this package defends against, what it does not, and how to report
+        something it got wrong.</p>
+
+      <div class="sec" id="s-trade">
+        <h2>The trade</h2>
+        <p>A click-to-chat link is public by construction: everything prefilled into it travels in a
+          URL, through the user's browser, and may end up in history, logs and referrer headers.
+          <strong>Do not prefill a secret.</strong> That is the trade at the heart of the link half,
+          and no amount of care in this package changes it.</p>
+        <div class="scroller"><table>
+          <thead><tr><th>Version</th><th>Supported</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">2.x</td><td>Yes</td></tr>
+            <tr><td class="mono">1.x</td><td>No — upgrade, see <a href="#/upgrade">Upgrading</a></td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="sec" id="s-defends">
+        <h2>What it defends against</h2>
+        <ul class="plain">
+          <li><strong>Webhook forgery.</strong> The HMAC is computed over the raw request body and
+            compared with <code>hash_equals()</code>. An empty <code>app_secret</code> is a failure,
+            not a waiver, and the rejection is a bare 403 that reveals nothing.</li>
+          <li><strong>Accidental exposure of the webhook.</strong> The route does not exist until
+            <code>webhook.enabled</code> is explicitly true. Installing or updating the package
+            cannot add a public endpoint to your application.</li>
+          <li><strong>Leaking message content.</strong> Nothing is logged unless a channel is named
+            in <code>logging.channel</code>, and even then bodies are redacted by default. Inbound
+            message text is personal data, and in many deployments special-category data.</li>
+          <li><strong>Leaking credentials.</strong> <code>whatsapp:status</code> masks the token, and
+            exceptions are built from the parsed error body rather than the HTTP client's request
+            context, which carries the <code>Authorization</code> header.</li>
+          <li><strong>Injection into a rendered page.</strong> <code>toHtml()</code> escapes before
+            adding tags, and the Blade component escapes both URL and label.</li>
+          <li><strong>Unbounded bodies.</strong> A body is bounded before it becomes a URL, so a
+            value reaching a link from a request cannot produce an unbounded one.</li>
+        </ul>
+      </div>
+
+      <div class="sec" id="s-scope">
+        <h2>Scope</h2>
+        <p><strong>In scope:</strong> a webhook request accepted without a valid signature, an access
+          token or phone number appearing in a log line or an exception message, an inbound message
+          body producing markup that escapes into a rendered page, a crafted phone number or message
+          body causing this package to address a conversation other than the one asked for, and any
+          crash reachable from a value an application would reasonably pass in.</p>
+        <p style="margin-top:1rem"><strong>Out of scope:</strong> how an application stores the
+          numbers and message bodies it passes here, and anything decided by Meta's platform rather
+          than by this code.</p>
+        <div class="note">It cannot tell you whether a number belongs to the person you think it
+          does, nor whether it has WhatsApp at all. It validates shape, not identity.</div>
+      </div>
+
+      <div class="sec" id="s-report">
+        <h2>Reporting a vulnerability</h2>
+        <p>Email <strong>gabriele@sbaiz.com</strong> with a description, the package version, and a
+          reproduction if you have one. Please do not open a public issue.</p>
+        <p style="margin-top:1rem">You will get an acknowledgement within 5 working days and an
+          assessment within 15. If the report is valid you will be credited in the release notes
+          unless you ask not to be.</p>
+      </div>
+
+      <div class="pager">
+        <a href="#/troubleshooting"><span>Previous</span><b>Troubleshooting</b></a>
+        <a class="next" href="#/upgrade"><span>Next</span><b>Upgrading</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── UPGRADE ─────────── -->
+    <section class="page" id="upgrade">
+      <h1>Upgrading from 1.x</h1>
+      <p class="lede">Version 2 is a rewrite, but the changes at a call site are small and mechanical.</p>
+
+      <div class="sec" id="u-api">
+        <h2>The API</h2>
+        <pre class="code"><span class="c">// 1.x</span>
+WhatsappToolkit::<span class="k">url</span>($phone, $html);
+WhatsappToolkit::<span class="k">formatMessage</span>($html);      <span class="c">// returned url-encoded text</span>
+WhatsappToolkit::<span class="k">formatPhoneNumber</span>($phone); <span class="c">// returned url-encoded text</span>
+
+<span class="c">// 2.0</span>
+WhatsappToolkit::<span class="k">url</span>($phone, $html);        <span class="c">// unchanged, still the shortcut</span>
+WhatsappToolkit::<span class="k">to</span>($phone)-&gt;<span class="k">html</span>($html)-&gt;<span class="k">url</span>();
+WhatsappToolkit::<span class="k">format</span>($html);             <span class="c">// plain WhatsApp markup</span>
+WhatsappToolkit::<span class="k">number</span>($phone)-&gt;<span class="k">waId</span>();    <span class="c">// a value object</span></pre>
+        <p style="margin-top:1.1rem"><code>url()</code> survives with the same signature, so the most
+          common call site needs no change — but what it <em>produces</em> is different.</p>
+      </div>
+
+      <div class="sec" id="u-output">
+        <h2>What the output looks like now</h2>
+        <div class="scroller"><table>
+          <thead><tr><th>Change</th><th>Was</th><th>Is</th></tr></thead>
+          <tbody>
+            <tr><td><b>Numbers normalised</b></td><td class="mono">phone=%2B39+333+123+4567</td><td class="mono">wa.me/393331234567</td></tr>
+            <tr><td><b>Default flavour</b></td><td class="mono">api.whatsapp.com</td><td class="mono">wa.me</td></tr>
+            <tr><td><b>Entities</b></td><td class="mono">&amp;amp; &amp;eacute;</td><td class="mono">&amp; é</td></tr>
+            <tr><td><b>Emphasis</b></td><td class="mono">" *Bold*  text"</td><td class="mono">"*Bold* text"</td></tr>
+            <tr><td><b>Second &lt;ol&gt;</b></td><td class="mono">4. 5.</td><td class="mono">1. 2.</td></tr>
+            <tr><td><b>Links</b></td><td class="mono">"here"</td><td class="mono">"here (https://…)"</td></tr>
+            <tr><td><b>Spaces</b></td><td class="mono">+</td><td class="mono">%20</td></tr>
+          </tbody>
+        </table></div>
+        <div class="note">If your application prepends a country code by hand —
+          <code>'+39' . $phone</code> — delete that and set <code>WHATSAPP_COUNTRY_CODE=39</code>
+          instead. To keep the 1.x URL exactly, set <code>link.target</code> to
+          <code>LinkTarget::Api</code>.</div>
+      </div>
+
+      <div class="sec" id="u-formatting">
+        <h2>Formatting no longer encodes</h2>
+        <pre class="code"><span class="c">// 1.x</span>
+$encoded = WhatsappToolkit::<span class="k">formatMessage</span>($html);
+
+<span class="c">// 2.0</span>
+$text = WhatsappToolkit::<span class="k">format</span>($html);   <span class="c">// plain</span>
+$encoded = <span class="k">rawurlencode</span>($text);            <span class="c">// only if you really need it</span></pre>
+        <p style="margin-top:1.1rem"><code>number()</code> throws
+          <code>InvalidPhoneNumberException</code> on something unusable; use
+          <code>tryNumber()</code> for a <code>null</code> instead.</p>
+      </div>
+
+      <div class="sec" id="u-blade">
+        <h2>Hand-written links in Blade</h2>
+        <pre class="code"><span class="c">// before</span>
+&lt;a href="https://api.whatsapp.com/send?phone=<span class="s">{{ $phone }}</span>&amp;text=<span class="s">{{ urlencode($subject) }}</span>"
+   target="_blank"&gt;Chat on WhatsApp&lt;/a&gt;
+
+<span class="c">// after</span>
+&lt;<span class="k">x-whatsapp-link</span> :to="<span class="s">$phone</span>" :message="<span class="s">$subject</span>"&gt;Chat on WhatsApp&lt;/<span class="k">x-whatsapp-link</span>&gt;</pre>
+      </div>
+
+      <div class="sec" id="u-removed">
+        <h2>Requirements and removals</h2>
+        <div class="scroller"><table>
+          <thead><tr><th>&nbsp;</th><th class="mono">1.x</th><th class="mono">2.0</th></tr></thead>
+          <tbody>
+            <tr><td><b>PHP</b></td><td class="mono">8.0</td><td class="mono">8.3</td></tr>
+            <tr><td><b>Laravel</b></td><td class="mono">10, 11, 12</td><td class="mono">11, 12, 13</td></tr>
+          </tbody>
+        </table></div>
+        <ul class="plain">
+          <li><code>formatMessage()</code> → <code>format()</code></li>
+          <li><code>formatPhoneNumber()</code> → <code>number()</code></li>
+          <li>The empty <code>database/factories</code> skeleton is gone</li>
+        </ul>
+      </div>
+
+      <div class="pager">
+        <a href="#/security"><span>Previous</span><b>Security</b></a>
+        <a class="next" href="#/changelog"><span>Next</span><b>Changelog</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── CHANGELOG ─────────── -->
+    <section class="page" id="changelog">
+      <h1>Changelog</h1>
+      <p class="lede">All notable changes to <code>whatsapp-toolkit</code>.</p>
+
+      <div class="sec" id="ch-200">
+        <h2>2.0.0</h2>
+        <p>A rewrite. The migration is short — see <a href="#/upgrade">Upgrading from 1.x</a>.</p>
+
+        <h3 style="margin-top:1.6rem">Fixed</h3>
+        <ul class="plain">
+          <li><strong>Phone numbers are normalised rather than url-encoded.</strong>
+            <code>+39 333 123 4567</code> travelled as <code>%2B39+333+123+4567</code> and opened a
+            chat with nobody; it is now <code>393331234567</code>.</li>
+          <li><strong>HTML entities are decoded.</strong> <code>&amp;amp;</code>,
+            <code>&amp;egrave;</code> and <code>&amp;#39;</code> no longer reach the chat window
+            literally.</li>
+          <li><strong>Ordered lists restart at 1.</strong> A second <code>&lt;ol&gt;</code> continued
+            the first one&rsquo;s numbering.</li>
+          <li><strong>Links keep their destination.</strong>
+            <code>&lt;a href="&hellip;"&gt;here&lt;/a&gt;</code> lost its URL entirely.</li>
+          <li><strong>Emphasis markers no longer carry stray padding spaces.</strong></li>
+          <li><strong>Spaces encode as <code>%20</code></strong>, not as a <code>+</code> that some
+            clients render literally.</li>
+        </ul>
+
+        <h3 style="margin-top:1.8rem">Added</h3>
+        <ul class="plain">
+          <li>A fluent, immutable <code>Chat</code> builder, and five link flavours.</li>
+          <li>A <code>PhoneNumber</code> value object with <code>waId()</code>, <code>e164()</code>,
+            <code>national()</code> and a configurable default country code.</li>
+          <li>Markdown &rarr; WhatsApp and WhatsApp &rarr; HTML formatters.</li>
+          <li>A <code>&lt;x-whatsapp-link&gt;</code> Blade component and a <code>@whatsappUrl</code>
+            directive.</li>
+          <li>A <code>WhatsappNumber</code> validation rule, an <code>AsWhatsappNumber</code> cast,
+            and <code>Str</code>/<code>Stringable</code> macros.</li>
+          <li>QR codes, via the suggested <code>bacon/bacon-qr-code</code>.</li>
+          <li>Named message templates in config, with <code>:placeholder</code> substitution.</li>
+          <li>A Meta Cloud API client &mdash; text, template, media, interactive, location and
+            reaction messages, media upload and download, typed responses, and exceptions mapped
+            from Meta&rsquo;s error codes with a hint naming the actual fix.</li>
+          <li>A <code>whatsapp</code> notification channel and <code>WhatsappMessage</code> payload.</li>
+          <li><code>WhatsappToolkit::fake()</code> with <code>assertSent()</code>,
+            <code>assertSentTo()</code>, <code>assertNothingSent()</code> and friends.</li>
+          <li>An opt-in inbound webhook with signature verification, idempotent delivery and five
+            events.</li>
+          <li>A Nova action for sending from a detail screen, when Nova is installed.</li>
+          <li><code>whatsapp:url</code> and <code>whatsapp:status</code> commands.</li>
+          <li>A config file, contracts for every replaceable piece, and container bindings.</li>
+          <li>CI: tests across PHP 8.3/8.4 and Laravel 11/12, PHPStan level 6, Pint.</li>
+        </ul>
+
+        <h3 style="margin-top:1.8rem">Changed</h3>
+        <ul class="plain">
+          <li>Requires PHP 8.3 and Laravel 11, 12 or 13.</li>
+          <li>Formatting and encoding are separate: <code>format()</code> returns plain WhatsApp
+            markup, and percent-escaping happens once inside <code>url()</code>.</li>
+          <li><code>wa.me</code> is the default link flavour.</li>
+          <li>The static API is gone; the package is an object bound in the container.</li>
+        </ul>
+
+        <h3 style="margin-top:1.8rem">Performance</h3>
+        <p>Measured by <code>composer bench</code> against the 1.x implementation: plain text
+          <strong>31&times;</strong> faster, small HTML <strong>1.9&times;</strong>, rich editor
+          output <strong>1.4&times;</strong>, and a repeated body <strong>230&times;</strong>
+          through the per-request memo.</p>
+      </div>
+
+      <div class="sec" id="ch-older">
+        <h2>1.3.0 and earlier</h2>
+        <p>Initial releases: URL generator, HTML message formatter, phone number formatter.</p>
+      </div>
+
+      <div class="pager">
+        <a href="#/upgrade"><span>Previous</span><b>Upgrading</b></a>
+        <a class="next" href="#/project"><span>Next</span><b>Project &amp; licence</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── PROJECT ─────────── -->
+    <section class="page" id="project">
+      <h1>Project &amp; licence</h1>
+      <p class="lede">How to contribute, how the suite is run, who wrote it, and the licence in full.</p>
+
+      <div class="sec" id="p-setup">
+        <h2>Setup and the three gates</h2>
+        <pre class="code">git clone git@github.com:gabrielesbaiz/whatsapp-toolkit.git
+cd whatsapp-toolkit
+composer install</pre>
+        <pre class="code">composer format    <span class="c"># pint, laravel preset plus strict types</span>
+composer analyse   <span class="c"># phpstan level 6 via larastan</span>
+composer test      <span class="c"># pest — 183 tests, 264 assertions</span>
+composer bench     <span class="c"># the formatter, against the 1.x implementation</span></pre>
+        <p style="margin-top:1.1rem">CI runs the first three on PHP 8.3 and 8.4 against Laravel 11 and
+          12, at both lowest and stable dependencies. <code>composer lint</code> runs format and
+          analyse together.</p>
+      </div>
+
+      <div class="sec" id="p-rules">
+        <h2>Ground rules</h2>
+        <ul class="plain">
+          <li><strong>Every behaviour change needs a test that fails without it.</strong> The suite
+            runs in about two seconds; there is no excuse.</li>
+          <li><strong>The link layer must stay dependency-free.</strong> Building a URL may not need
+            an HTTP client, a credential or a network. An architecture test enforces this, and it is
+            not negotiable — a great many applications install this package for the links alone.</li>
+          <li><strong>Formatting is not encoding.</strong> <code>format()</code> returns plain
+            WhatsApp markup; percent-escaping happens once, in <code>Chat::url()</code>.</li>
+          <li><strong>Performance claims come with a measurement.</strong> Touching
+            <code>HtmlFormatter</code> means running <code>composer bench</code> before and after and
+            putting the numbers in the PR.</li>
+          <li><strong>Comments explain why, not what.</strong> If a line is surprising, say what it
+            prevents.</li>
+        </ul>
+      </div>
+
+      <div class="sec" id="p-cloud">
+        <h2>Working on the Cloud API layer</h2>
+        <p>The whole sending half must stay dormant when it is not configured: no routes, no
+          credential reads, no exceptions on boot. Tests use two different fakes, and the difference
+          matters:</p>
+        <ul class="plain">
+          <li><code>WhatsappToolkit::fake()</code> records message objects and never touches HTTP.
+            Use it when the test is about behaviour — what was sent, to whom.</li>
+          <li><code>Http::fake()</code> intercepts real requests. Use it when the test is about the
+            wire format, the retry policy, or error mapping.</li>
+        </ul>
+        <div class="note">Never commit a real token, phone number id or webhook payload from a live
+          account — the fixtures in <code>tests/</code> are deliberately fictional.</div>
+      </div>
+
+      <div class="sec" id="p-credits">
+        <h2>Credits</h2>
+        <p>Written and maintained by
+          <a href="https://github.com/gabrielesbaiz">Gabriele Sbaiz</a>, with thanks to
+          <a href="https://github.com/gabrielesbaiz/whatsapp-toolkit/graphs/contributors">everyone
+          who has contributed</a>.</p>
+        <p style="margin-top:1rem">It stands on work this package does not contain: Laravel,
+          <a href="https://github.com/spatie/laravel-package-tools">spatie/laravel-package-tools</a>,
+          and — when you ask for a QR code —
+          <a href="https://github.com/Bacon/BaconQrCode">bacon/bacon-qr-code</a>.</p>
+      </div>
+
+      <div class="sec" id="p-licence">
+        <h2>Licence</h2>
+        <p>MIT. The warranty disclaimer and limitation of liability apply in full.</p>
+        <div class="licence">The MIT License (MIT)
+
+Copyright (c) Gabriele Sbaiz &lt;gabriele@sbaiz.com&gt;
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.</div>
+        <div class="note">This package is provided as is. It builds links and formats text; it cannot
+          tell you whether a number belongs to the person you think it does, or whether it has
+          WhatsApp at all. The Cloud API half depends entirely on Meta's platform — its rate limits,
+          template approvals, 24-hour window and error codes are theirs, not this package's, and they
+          change without notice.</div>
+      </div>
+
+      <div class="pager">
+        <a href="#/changelog"><span>Previous</span><b>Changelog</b></a>
+        <a class="next" href="#/sponsor"><span>Next</span><b>Sponsor</b></a>
+      </div>
+    </section>
+
+    <!-- ─────────── SPONSOR ─────────── -->
+    <section class="page" id="sponsor">
+      <h1>Sponsor</h1>
+      <p class="lede">Free forever, and not free to maintain.</p>
+
+      <div class="sec" id="sp-why">
+        <h2>What sponsorship buys</h2>
+        <p>Nobody notices a phone number that was normalised correctly. The link opens the right
+          conversation, the accented characters arrive as accented characters, and the work that
+          produced that is invisible by design. What is not invisible is the maintenance behind it:
+          Meta ships a new Graph API version, deprecates an error code, changes what a template
+          rejects — and a package that quietly kept working has to be made to keep working. It stays
+          MIT either way.</p>
+        <p style="margin-top:1rem">Sponsoring buys the unglamorous half: testing against each new
+          Laravel major, keeping the Cloud API mapping current with Meta's codes, answering issues
+          from people whose numbers arrive in a format nobody anticipated, and holding the suite at
+          183 passing tests while all of that moves. It stays MIT either way.</p>
+        <p style="margin-top:1.4rem">
+          <a class="btn" href="https://github.com/sponsors/gabrielesbaiz">&#9829; Become a sponsor — $5/month</a>
+        </p>
+      </div>
+
+      <div class="sec" id="sp-ways">
+        <h2>Four ways to help</h2>
+        <div class="scroller"><table>
+          <thead><tr><th>Way</th><th>Cost</th><th>Why it helps</th></tr></thead>
+          <tbody>
+            <tr><td>⭐ <b>Star the repo</b></td><td class="mono">Free</td><td>Thirty seconds, and it is the first signal other developers look at</td></tr>
+            <tr><td>🐛 <b>Open a good issue</b></td><td class="mono">Free</td><td>A phone format that normalises wrong, with the input, is worth more than you think</td></tr>
+            <tr><td>❤️ <b>Sponsor from $5</b></td><td class="mono">$5/month</td><td>Pays for the compatibility work nobody sees</td></tr>
+            <tr><td>🏢 <b>Company tier</b></td><td class="mono">Custom</td><td>Your logo in the README and on this site, and a direct line for upgrade questions</td></tr>
+          </tbody>
+        </table></div>
+        <div class="note"><b>Why ask at all?</b> This package is MIT and always will be. Nothing is
+          paywalled, nothing phones home, and no formatter, link flavour or Cloud API feature is held
+          back for sponsors. Sponsorship buys maintenance time, not features — and if you cannot
+          sponsor, the star and the bug report genuinely help.</div>
+      </div>
+
+      <div class="pager">
+        <a href="#/project"><span>Previous</span><b>Project &amp; licence</b></a>
+        <a class="next" href="#/home"><span>Next</span><b>Introduction</b></a>
+      </div>
+    </section>
+
+  </div>
+
+  <aside class="onthispage" aria-label="On this page">
+    <h4>On this page</h4>
+    <ol id="toc"></ol>
+  </aside>
+</div>
+
+</main>
+
+<footer class="sitefoot">
+  <div class="mx">
+    <div class="cols">
+      <div><h4>Package</h4><ul>
+        <li><a href="https://github.com/gabrielesbaiz/whatsapp-toolkit">GitHub</a></li>
+        <li><a href="https://packagist.org/packages/gabrielesbaiz/whatsapp-toolkit">Packagist</a></li>
+        <li><a href="#/changelog">Changelog</a></li>
+      </ul></div>
+      <div><h4>Documentation</h4><ul>
+        <li><a href="#/home">Introduction</a></li>
+        <li><a href="#/install">Installation</a></li>
+        <li><a href="#/configuration">Configuration</a></li>
+      </ul></div>
+      <div><h4>Reference</h4><ul>
+        <li><a href="#/api">API reference</a></li>
+        <li><a href="#/commands">Commands</a></li>
+        <li><a href="#/troubleshooting">Troubleshooting</a></li>
+      </ul></div>
+      <div><h4>Project</h4><ul>
+        <li><a href="#/security">Security policy</a></li>
+        <li><a href="#/upgrade">Upgrading from 1.x</a></li>
+        <li><a href="#/project">Project &amp; licence</a></li>
+        <li><a href="#/sponsor">Sponsor</a></li>
+      </ul></div>
+    </div>
+    <div class="base">
+      <span>MIT licensed · Built by Gabriele Sbaiz</span>
+      <span>Sending requires a Meta WhatsApp Business account, obtained separately</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+  const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const root = document.documentElement;
+
+  /* theme ─────────────────────────────────────────────────────── */
+  const mode = document.getElementById('mode');
+  const prefersDark = matchMedia('(prefers-color-scheme: dark)');
+  const isDark = () => {
+    const explicit = root.dataset.theme;
+    return explicit ? explicit === 'dark' : prefersDark.matches;
+  };
+  const syncLabel = () => { mode.textContent = isDark() ? 'Light' : 'Dark'; };
+  mode.addEventListener('click', () => {
+    root.dataset.theme = isDark() ? 'light' : 'dark';
+    syncLabel();
+    try { localStorage.setItem('wt-theme', root.dataset.theme); } catch (e) {}
+  });
+  prefersDark.addEventListener('change', syncLabel);
+  try {
+    const saved = localStorage.getItem('wt-theme');
+    if (saved === 'dark' || saved === 'light') root.dataset.theme = saved;
+  } catch (e) {}
+  syncLabel();
+
+  /* scroll progress ───────────────────────────────────────────── */
+  const progress = document.getElementById('progress');
+  let ticking = false;
+  const paintBar = () => {
+    const max = document.documentElement.scrollHeight - innerHeight;
+    progress.style.width = (max > 0 ? Math.min(100, Math.max(0, (scrollY / max) * 100)) : 0) + '%';
+    ticking = false;
+  };
+  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(paintBar); } }, { passive:true });
+  addEventListener('resize', paintBar, { passive:true });
+
+  /* the stamp, on the landing page ────────────────────────────── */
+  const stamp = document.getElementById('stamp');
+  const dropStamp = () => {
+    stamp.classList.remove('on');
+    if (calm) { stamp.classList.add('on'); return; }
+    setTimeout(() => stamp.classList.add('on'), 560);
+  };
+
+  /* router ────────────────────────────────────────────────────── */
+  const pages = [...document.querySelectorAll('.page')];
+  const home = document.getElementById('home');
+  const shell = document.getElementById('docshell');
+  const navLinks = [...document.querySelectorAll('#nav a[href^="#/"]')];
+  const sideLinks = [...document.querySelectorAll('.sidenav a[href^="#/"]')];
+  const toc = document.getElementById('toc');
+  const rail = toc.closest('.onthispage');
+  let tocSpy = null, sections = [];
+
+  const buildToc = page => {
+    toc.innerHTML = '';
+    if (tocSpy) { tocSpy.disconnect(); tocSpy = null; }
+    sections = [...page.querySelectorAll('.sec[id]')].map(el => {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = '#' + el.id;
+      a.textContent = (el.querySelector('h2')?.textContent || el.id).trim();
+      li.appendChild(a); toc.appendChild(li);
+      return { a, el };
+    });
+    rail.style.display = sections.length < 3 ? 'none' : '';
+    if (sections.length < 3) return;
+    tocSpy = new IntersectionObserver(es => {
+      const vis = es.filter(e => e.isIntersecting)
+                    .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (!vis.length) return;
+      const hit = sections.find(s => s.el === vis[0].target);
+      if (hit) sections.forEach(s => s.a.setAttribute('aria-current', String(s === hit)));
+    }, { rootMargin:'-18% 0px -68% 0px' });
+    sections.forEach(s => tocSpy.observe(s.el));
+  };
+
+  const route = () => {
+    const raw = location.hash;
+    /* An in-page jump (#g-links) must not be read as a route. */
+    if (raw && !raw.startsWith('#/')) return;
+    const id = raw.replace('#/', '') || 'home';
+    const page = document.getElementById(id) || home;
+
+    pages.forEach(p => p.classList.toggle('hidden', p !== page));
+    const onHome = page === home;
+    shell.classList.toggle('hidden', onHome);
+
+    navLinks.forEach(a => a.setAttribute('aria-current', String(a.getAttribute('href') === '#/' + page.id)));
+    sideLinks.forEach(a => {
+      const on = a.getAttribute('href') === '#/' + page.id;
+      on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current');
+    });
+
+    if (onHome) { rail.style.display = 'none'; dropStamp(); }
+    else buildToc(page);
+
+    document.getElementById('sidenav').classList.remove('open');
+    document.getElementById('menuBtn').setAttribute('aria-expanded', 'false');
+    scrollTo({ top:0, behavior:'auto' });
+    paintBar();
+  };
+  addEventListener('hashchange', route);
+
+  /* the pages menu, below 1000px ──────────────────────────────── */
+  const menuBtn = document.getElementById('menuBtn');
+  menuBtn.addEventListener('click', () => {
+    const nav = document.getElementById('sidenav');
+    const open = nav.classList.toggle('open');
+    menuBtn.setAttribute('aria-expanded', String(open));
+    if (open) { shell.classList.remove('hidden'); nav.scrollIntoView({ block:'start' }); }
+  });
+
+  /* command palette ───────────────────────────────────────────── */
+  const pal = document.getElementById('pal');
+  const input = document.getElementById('palInput');
+  const list = document.getElementById('palList');
+  const open = document.getElementById('openPal');
+  document.getElementById('kbd').textContent =
+    /Mac|iPhone|iPad/.test(navigator.platform || '') ? '⌘K' : 'Ctrl K';
+
+  const PAGES = sideLinks.map(a => ({ label: a.textContent.trim(), hint:'Page', href: a.getAttribute('href') }));
+  let rows = [], cursor = 0;
+  const items = () => [
+    ...PAGES,
+    ...sections.map(s => ({ label: s.a.textContent, hint:'Section', href: s.a.getAttribute('href') })),
+  ];
+  const select = () => rows.forEach((r, i) => r.li.setAttribute('aria-selected', String(i === cursor)));
+  const go = item => { pal.hidden = true; open.focus(); location.hash = item.href; };
+  const render = (q = '') => {
+    const hits = items().filter(i => i.label.toLowerCase().includes(q.trim().toLowerCase()));
+    list.innerHTML = ''; rows = []; cursor = 0;
+    hits.forEach((item, i) => {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.innerHTML = '<b></b><em></em>';
+      li.querySelector('b').textContent = item.label;
+      li.querySelector('em').textContent = item.hint;
+      li.addEventListener('click', () => go(item));
+      li.addEventListener('mousemove', () => { cursor = i; select(); });
+      list.appendChild(li); rows.push({ li, item });
+    });
+    select();
+  };
+  const show = () => { pal.hidden = false; input.value = ''; render(); input.focus(); };
+  open.addEventListener('click', show);
+  input.addEventListener('input', () => render(input.value));
+  pal.addEventListener('click', e => { if (e.target === pal) { pal.hidden = true; open.focus(); } });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { pal.hidden = true; open.focus(); }
+    else if (e.key === 'ArrowDown' && rows.length) { e.preventDefault(); cursor = (cursor + 1) % rows.length; select(); }
+    else if (e.key === 'ArrowUp' && rows.length) { e.preventDefault(); cursor = (cursor - 1 + rows.length) % rows.length; select(); }
+    else if (e.key === 'Enter' && rows[cursor]) { e.preventDefault(); go(rows[cursor].item); }
+  });
+  addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault(); pal.hidden ? show() : (pal.hidden = true);
+    } else if (e.key === '/' && pal.hidden && !/input|textarea/i.test(e.target.tagName)) {
+      e.preventDefault(); show();
+    }
+  });
+
+  route();
+})();
+</script>
+
+</body>
+</html>

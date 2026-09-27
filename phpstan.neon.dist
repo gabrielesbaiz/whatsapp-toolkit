@@ -1,0 +1,22 @@
+parameters:
+    level: 6
+
+    paths:
+        - src
+        - config
+
+    # Nova is a suggested dependency, so its classes are not installed here.
+    excludePaths:
+        - src/Nova
+
+    # Keeps the analysis cache out of the package root.
+    tmpDir: build/phpstan
+
+    # PHPDoc in this package is documentation, not a proof. Trusting it as
+    # certain makes larastan report perfectly reachable branches as dead.
+    treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        # This *is* a config file; larastan only recognises an application's
+        # own config directory, not a package's.
+        - identifier: larastan.noEnvCallsOutsideOfConfig
