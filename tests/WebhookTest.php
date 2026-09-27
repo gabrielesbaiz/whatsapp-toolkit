@@ -83,10 +83,15 @@ it('ships with the webhook switched off', function () {
 });
 
 it('echoes the challenge back as plain text', function () {
-    $this->get('whatsapp/webhook?hub_mode=subscribe&hub_verify_token=verify-me&hub_challenge=12345')
+    $response = $this->get('whatsapp/webhook?hub_mode=subscribe&hub_verify_token=verify-me&hub_challenge=12345')
         ->assertOk()
-        ->assertSee('12345')
-        ->assertHeader('Content-Type', 'text/plain; charset=UTF-8');
+        ->assertSee('12345');
+
+    // The charset arrives spelled "utf-8" on Laravel 11 and "UTF-8" on 12, and
+    // neither casing is the point: what matters is that the challenge is plain
+    // text rather than JSON, which Meta rejects.
+    expect(strtolower((string) $response->headers->get('Content-Type')))
+        ->toBe('text/plain; charset=utf-8');
 });
 
 it('refuses a handshake with the wrong token', function () {
