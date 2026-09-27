@@ -1,110 +1,201 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Gabrielesbaiz\WhatsappToolkit;
 
-class WhatsappToolkit
+use Gabrielesbaiz\WhatsappToolkit\Cloud\CloudApiFake;
+use Gabrielesbaiz\WhatsappToolkit\Contracts\CloudApi;
+use Gabrielesbaiz\WhatsappToolkit\Contracts\PhoneNormalizer;
+use Gabrielesbaiz\WhatsappToolkit\Contracts\QrRenderer;
+use Gabrielesbaiz\WhatsappToolkit\Contracts\Whatsapp;
+use Gabrielesbaiz\WhatsappToolkit\Enums\LinkTarget;
+use Gabrielesbaiz\WhatsappToolkit\Enums\MessageFormat;
+use Gabrielesbaiz\WhatsappToolkit\Exceptions\ConfigurationException;
+use Gabrielesbaiz\WhatsappToolkit\Formatters\HtmlFormatter;
+use Gabrielesbaiz\WhatsappToolkit\Formatters\MarkdownFormatter;
+use Gabrielesbaiz\WhatsappToolkit\Formatters\WhatsappToHtmlFormatter;
+use Gabrielesbaiz\WhatsappToolkit\Support\Chat;
+use Gabrielesbaiz\WhatsappToolkit\Support\PhoneNumber;
+use Illuminate\Contracts\Config\Repository;
+use Illuminate\Contracts\Container\Container;
+use Illuminate\Support\Traits\Macroable;
+
+/**
+ * Click-to-chat links, WhatsApp formatting, QR codes and Cloud API sending.
+ *
+ * This is an ordinary object bound as a singleton, not a static class. That is
+ * what makes the facade genuinely swappable in tests, and what lets an
+ * application replace the phone normalizer or the formatter without
+ * subclassing anything.
+ */
+class WhatsappToolkit implements Whatsapp
 {
+    use Macroable;
+
+    public function __construct(
+        protected readonly Repository $config,
+        protected readonly Container $container,
+        protected readonly PhoneNormalizer $normalizer,
+        protected readonly HtmlFormatter $html,
+        protected readonly MarkdownFormatter $markdown,
+        protected readonly WhatsappToHtmlFormatter $reverse,
+        protected readonly QrRenderer $qr,
+    ) {}
+
     /**
-     * Format message.
-     *
-     * @param  string|null $message
-     * @return string
+     * Start a chat addressed to someone.
      */
-    public static function formatMessage(?string $message): string
+    public function to(string|PhoneNumber|null $recipient): Chat
     {
-        if (! $message) {
-            return '';
+        return $this->chat()->to($recipient);
+    }
+
+    /**
+     * Start a chat with no recipient yet — useful for a shared body.
+     */
+    public function chat(): Chat
+    {
+        return new Chat($this);
+    }
+
+    /**
+     * Normalize a phone number into its WhatsApp form.
+     */
+    public function number(?string $value): PhoneNumber
+    {
+        return $this->normalizer->normalize($value);
+    }
+
+    /**
+     * Normalize without throwing; null when the number is unusable.
+     */
+    public function tryNumber(?string $value): ?PhoneNumber
+    {
+        return $this->normalizer->tryNormalize($value);
+    }
+
+    /**
+     * HTML to WhatsApp markup. Returns plain text, never URL-encoded.
+     */
+    public function format(?string $html): string
+    {
+        return $this->html->format($html);
+    }
+
+    /**
+     * Markdown to WhatsApp markup.
+     */
+    public function formatMarkdown(?string $markdown): string
+    {
+        return $this->markdown->format($markdown);
+    }
+
+    /**
+     * WhatsApp markup back to HTML, escaped, for rendering in a browser.
+     */
+    public function toHtml(?string $text): string
+    {
+        return $this->reverse->format($text);
+    }
+
+    /**
+     * Format a body written in the given notation.
+     */
+    public function formatAs(?string $body, MessageFormat $format): string
+    {
+        return match ($format) {
+            MessageFormat::Html => $this->html->format($body),
+            MessageFormat::Markdown => $this->markdown->format($body),
+            MessageFormat::Plain => trim((string) $body),
+        };
+    }
+
+    /**
+     * The one-liner, for call sites that want nothing but a URL.
+     */
+    public function url(string|PhoneNumber|null $recipient, ?string $html = null): string
+    {
+        return $this->to($recipient)->html($html)->url();
+    }
+
+    /**
+     * Fill a named template from config with :placeholders.
+     *
+     * @param  array<string, string|int|float|null>  $replacements
+     *
+     * @throws ConfigurationException
+     */
+    public function renderTemplate(string $name, array $replacements = []): string
+    {
+        $template = $this->config->get("whatsapp-toolkit.templates.{$name}");
+
+        if (! is_string($template)) {
+            throw ConfigurationException::missingTemplate($name);
         }
 
-        $message = str_replace('&nbsp;', ' ', $message);
+        $keys = [];
+        $values = [];
 
-        $message = str_replace('</p><p>', '</p> <p>', $message);
+        foreach ($replacements as $key => $value) {
+            // Longest key first, so :name does not eat the start of :name_full.
+            $keys[':'.$key] = (string) $value;
+        }
 
-        $message = str_replace(['<br>', '<br/>', '<br />'], "\n", $message);
+        uksort($keys, static fn (string $a, string $b): int => strlen($b) <=> strlen($a));
 
-        $message = preg_replace_callback('/<b>\s*(.*?)\s*<\/b>/', function ($matches) {
-            return ' *' . trim($matches[1]) . '* ';
-        }, $message);
-
-        $message = preg_replace_callback('/<strong>\s*(.*?)\s*<\/strong>/', function ($matches) {
-            return ' *' . trim($matches[1]) . '* ';
-        }, $message);
-
-        $message = preg_replace_callback('/<i>\s*(.*?)\s*<\/i>/', function ($matches) {
-            return ' _' . trim($matches[1]) . '_ ';
-        }, $message);
-
-        $message = preg_replace_callback('/<em>\s*(.*?)\s*<\/em>/', function ($matches) {
-            return ' _' . trim($matches[1]) . '_ ';
-        }, $message);
-
-        $message = preg_replace_callback('/<s>\s*(.*?)\s*<\/s>/', function ($matches) {
-            return ' ~' . trim($matches[1]) . '~ ';
-        }, $message);
-
-        $message = preg_replace_callback('/<del>\s*(.*?)\s*<\/del>/', function ($matches) {
-            return ' ~' . trim($matches[1]) . '~ ';
-        }, $message);
-
-        $message = preg_replace_callback('/<pre>\s*(.*?)\s*<\/pre>/s', function ($matches) {
-            return '```' . trim($matches[1]) . "```\n\n";
-        }, $message);
-
-        $message = preg_replace('/<blockquote>\s*<p>(.*?)<\/p>\s*<\/blockquote>/s', '<blockquote>$1</blockquote>', $message);
-
-        $message = preg_replace_callback('/<blockquote>\s*(.*?)\s*<\/blockquote>/s', function ($matches) {
-            $blockquoteText = preg_replace('/\n\s*/', "\n> ", trim($matches[1]));
-
-            return '> ' . $blockquoteText . "\n\n";
-        }, $message);
-
-        $message = preg_replace_callback('/<ul>\s*(.*?)\s*<\/ul>/s', function ($matches) {
-            return preg_replace_callback('/<li>\s*(.*?)\s*<\/li>/', function ($liMatches) {
-                return '- ' . trim($liMatches[1]) . "\n";
-            }, $matches[1]) . "\n";
-        }, $message);
-
-        $olCount = 1;
-
-        $message = preg_replace_callback('/<ol>\s*(.*?)\s*<\/ol>/s', function ($matches) use (&$olCount) {
-            return preg_replace_callback('/<li>\s*(.*?)\s*<\/li>/', function ($liMatches) use (&$olCount) {
-                return ($olCount++) . '. ' . trim($liMatches[1]) . "\n";
-            }, $matches[1]) . "\n";
-        }, $message);
-
-        $message = preg_replace('/\s*<p>\s*(.*?)\s*<\/p>\s*/', "$1\n\n", $message);
-
-        $message = trim($message);
-
-        $message = strip_tags($message);
-
-        return urlencode($message);
+        return strtr($template, $keys);
     }
 
     /**
-     * Format phone number.
-     *
-     * @param  string|null $phoneNumber
-     * @return string
+     * The Cloud API client, resolved lazily so the layer stays dormant.
      */
-    public static function formatPhoneNumber(?string $phoneNumber): string
+    public function cloud(): CloudApi
     {
-        return urlencode($phoneNumber);
+        return $this->container->make(CloudApi::class);
     }
 
     /**
-     * Composer url.
+     * Swap the Cloud API client for a recorder, Laravel-fake style.
      *
-     * @param  string|null $phoneNumber
-     * @param  string|null $message
-     * @return string
+     * Nothing leaves the process afterwards; assertions speak in message
+     * objects rather than in HTTP requests.
      */
-    public static function url(?string $phoneNumber, ?string $message): string
+    public function fake(): CloudApiFake
     {
-        $phoneNumber = self::formatPhoneNumber($phoneNumber);
+        $fake = new CloudApiFake;
 
-        $message = self::formatMessage($message);
+        $this->container->instance(CloudApi::class, $fake);
 
-        return "https://api.whatsapp.com/send?phone={$phoneNumber}&text={$message}";
+        return $fake;
+    }
+
+    public function qr(): QrRenderer
+    {
+        return $this->qr;
+    }
+
+    public function defaultTarget(): LinkTarget
+    {
+        $target = $this->config->get('whatsapp-toolkit.link.target', LinkTarget::WaMe);
+
+        return $target instanceof LinkTarget
+            ? $target
+            : (LinkTarget::tryFrom((string) $target) ?? LinkTarget::WaMe);
+    }
+
+    public function maxLength(): int
+    {
+        return (int) $this->config->get('whatsapp-toolkit.link.max_length', 4096);
+    }
+
+    /**
+     * @return 'truncate'|'throw'|'ignore'
+     */
+    public function overflowStrategy(): string
+    {
+        $strategy = (string) $this->config->get('whatsapp-toolkit.link.on_overflow', 'truncate');
+
+        return in_array($strategy, ['truncate', 'throw', 'ignore'], true) ? $strategy : 'truncate';
     }
 }
